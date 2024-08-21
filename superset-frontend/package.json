@@ -229,7 +229,7 @@
     "@emotion/babel-plugin": "^11.11.0",
     "@emotion/jest": "^11.11.0",
     "@hot-loader/react-dom": "^16.14.0",
-    "@istanbuljs/nyc-config-typescript": "^1.0.1",
+    "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@mihkeleidast/storybook-addon-source": "^1.0.1",
     "@storybook/addon-actions": "8.1.11",
     "@storybook/addon-controls": "8.1.11",
