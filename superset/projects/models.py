@@ -19,7 +19,7 @@ class Project(Model):
     project_id = Column(String(256))
     name = Column(String(256), nullable=False)
     project_name = Column(String(256), index=True)
-    attrs = Column(Text, nullable=True)
+    attrs_json = Column(Text, nullable=True)
 
 
 class UserProject(Model):
