@@ -58,6 +58,8 @@ REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 REDIS_CELERY_DB = os.getenv("REDIS_CELERY_DB", "0")
 REDIS_RESULTS_DB = os.getenv("REDIS_RESULTS_DB", "1")
+REDIS_SYNC_DB = os.getenv("REDIS_SYNC_DB", "2")
+REDIS_PROJECT_DB = os.getenv("REDIS_PROJECT_DB", "3")
 
 RESULTS_BACKEND = FileSystemCache("/app/superset_home/sqllab")
 
@@ -71,6 +73,18 @@ CACHE_CONFIG = {
 }
 DATA_CACHE_CONFIG = CACHE_CONFIG
 
+GLOBAL_ASYNC_QUERIES_REDIS_CONFIG = {
+    "port": REDIS_PORT,
+    "host": REDIS_HOST,
+    "password": "",
+    "db": REDIS_SYNC_DB,
+    "ssl": False,
+}
+
+PROJECT_REDIS_CONFIG = {
+    **GLOBAL_ASYNC_QUERIES_REDIS_CONFIG,
+    "db": REDIS_PROJECT_DB,
+}
 
 class CeleryConfig:
     broker_url = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_CELERY_DB}"
