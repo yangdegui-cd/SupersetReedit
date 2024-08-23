@@ -138,7 +138,7 @@
     "dom-to-image-more": "^3.2.0",
     "emotion-rgba": "0.0.12",
     "fast-glob": "^3.2.7",
-    "fs-extra": "^10.0.0",
+    "fs-extra": "^11.2.0",
     "fuse.js": "^7.0.0",
     "geolib": "^3.3.4",
     "googleapis": "^130.0.0",
