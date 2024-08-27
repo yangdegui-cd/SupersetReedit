@@ -86,6 +86,7 @@ PROJECT_REDIS_CONFIG = {
     "db": REDIS_PROJECT_DB,
 }
 
+
 class CeleryConfig:
     broker_url = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_CELERY_DB}"
     imports = (
@@ -111,7 +112,29 @@ class CeleryConfig:
 
 CELERY_CONFIG = CeleryConfig
 
-FEATURE_FLAGS = {"ALERT_REPORTS": True}
+FEATURE_FLAGS = {
+    "ALERT_REPORTS": True,
+    "DASHBOARD_RBAC": True,
+    "DRUID_JOINS": True,
+    "SCHEDULED_QUERIES": True,  # 计划查询
+    "THUMBNAILS": False,
+    "ENABLE_TEMPLATE_PROCESSING": True,  # 开启SQL模版
+    "ALLOW ADHOC SUBQUERY": True,
+    "CONFIRM_DASHBOARD_DIFF": True,
+    "DASHBOARD_VIRTUALIZATION": True,
+    "EMBEDDABLE_CHARTS": True,
+    "DRILL_BY": True,
+    "DRILL_TO_DETAIL": True,
+    "HORIZONTAL_FILTER_BAR": True,
+    "ENABLE_ADVANCED_DATA_TYPES": True,
+    "TAGGING_SYSTEM": False,  # 启用该功能后，所有者可以标记图表
+    "LISTVIEWS_DEFAULT_CARD_VIEW": True,  # 开启卡片显示
+    "CACHE_IMPERSONATION": True,
+    "CACHE_QUERY_BY_USER": True,
+    "GLOBAL_ASYNC_QUERIES": True,
+    "USE_PROJECT": True,
+}
+
 ALERT_REPORTS_NOTIFICATION_DRY_RUN = True
 WEBDRIVER_BASEURL = "http://superset:8088/"  # When using docker compose baseurl should be http://superset_app:8088/
 # The base URL for the email report hyperlinks.
