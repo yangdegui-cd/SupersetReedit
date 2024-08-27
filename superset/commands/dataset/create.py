@@ -31,8 +31,10 @@ from superset.commands.dataset.exceptions import (
     TableNotFoundValidationError,
 )
 from superset.daos.dataset import DatasetDAO
+from superset.daos.project import ProjectDAO
 from superset.exceptions import SupersetSecurityException
 from superset.extensions import security_manager
+from superset.projects.models import ProjectCorrelationType
 from superset.sql_parse import Table
 from superset.utils.decorators import on_error, transaction
 
@@ -49,6 +51,11 @@ class CreateDatasetCommand(CreateMixin, BaseCommand):
 
         dataset = DatasetDAO.create(attributes=self._properties)
         dataset.fetch_metadata()
+        ProjectDAO.create_correlation(
+            project_id=self._properties["project_id"],
+            object_id=dataset.id,
+            object_type=ProjectCorrelationType.DATASET,
+        )
         return dataset
 
     def validate(self) -> None:

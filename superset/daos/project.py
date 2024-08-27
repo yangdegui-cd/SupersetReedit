@@ -5,9 +5,15 @@ from typing import List, Dict, Any
 from flask_appbuilder.security.sqla.models import User
 from sqlalchemy import func
 
+from superset import is_feature_enabled
 from superset.daos.base import BaseDAO
 from superset.extensions import db
-from superset.projects.models import Project, UserProject
+from superset.projects.models import (
+    Project,
+    UserProject,
+    ProjectCorrelationObject,
+    ProjectCorrelationType
+)
 
 
 class ProjectDAO(BaseDAO[Project]):
@@ -53,6 +59,19 @@ class ProjectDAO(BaseDAO[Project]):
             Project.project_name == project_name
         )
         return not db.session.query(project_query.exists()).scalar()
+
+    @staticmethod
+    def create_correlation(project_id, object_id, object_type: ProjectCorrelationType):
+        if is_feature_enabled("USE_PROJECT") is False or project_id is None or object_id is None or object_type is None:
+            return None
+
+        correlation = ProjectCorrelationObject(
+            project_id=project_id,
+            object_id=object_id,
+            object_type=object_type,
+        )
+        db.session.add(correlation)
+        db.session.commit()
 
 
 class UserProjectDAO(BaseDAO[UserProject]):

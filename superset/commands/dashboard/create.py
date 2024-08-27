@@ -29,6 +29,8 @@ from superset.commands.dashboard.exceptions import (
 )
 from superset.commands.utils import populate_roles
 from superset.daos.dashboard import DashboardDAO
+from superset.daos.project import ProjectDAO
+from superset.projects.models import ProjectCorrelationType
 from superset.utils.decorators import on_error, transaction
 
 logger = logging.getLogger(__name__)
@@ -41,7 +43,13 @@ class CreateDashboardCommand(CreateMixin, BaseCommand):
     @transaction(on_error=partial(on_error, reraise=DashboardCreateFailedError))
     def run(self) -> Model:
         self.validate()
-        return DashboardDAO.create(attributes=self._properties)
+        new_dashboard = DashboardDAO.create(attributes=self._properties)
+        ProjectDAO.create_correlation(
+            project_id=self._properties["project_id"],
+            object_id=new_dashboard.id,
+            object_type=ProjectCorrelationType.DASHBOARD,
+        )
+        return new_dashboard
 
     def validate(self) -> None:
         exceptions: list[ValidationError] = []

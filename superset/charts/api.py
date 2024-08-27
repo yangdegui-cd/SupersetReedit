@@ -83,6 +83,7 @@ from superset.projects.models import ProjectCorrelationType
 from superset.tasks.thumbnails import cache_chart_thumbnail
 from superset.tasks.utils import get_current_user
 from superset.utils import json
+from superset.utils.core import get_project_id
 from superset.utils.screenshots import ChartScreenshot, DEFAULT_CHART_WINDOW_SIZE
 from superset.utils.urls import get_url_path
 from superset.views.base import ProjectFilter
@@ -338,6 +339,7 @@ class ChartRestApi(BaseSupersetModelRestApi):
         except ValidationError as error:
             return self.response_400(message=error.messages)
         try:
+            item["project_id"] = get_project_id(request)
             new_model = CreateChartCommand(item).run()
             return self.response(201, id=new_model.id, result=item)
         except DashboardsForbiddenError as ex:

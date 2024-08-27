@@ -67,7 +67,7 @@ from superset.datasets.schemas import (
 )
 from superset.projects.models import ProjectCorrelationType
 from superset.utils import json
-from superset.utils.core import parse_boolean_string
+from superset.utils.core import parse_boolean_string, get_project_id
 from superset.views.base import DatasourceFilter, ProjectFilter
 from superset.views.base_api import (
     BaseSupersetModelRestApi,
@@ -341,6 +341,7 @@ class DatasetRestApi(BaseSupersetModelRestApi):
             return self.response_400(message=error.messages)
 
         try:
+            item["project_id"] = get_project_id(request)
             new_model = CreateDatasetCommand(item).run()
             return self.response(201, id=new_model.id, result=item, data=new_model.data)
         except DatasetInvalidError as ex:
