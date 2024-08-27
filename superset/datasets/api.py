@@ -27,7 +27,7 @@ from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_babel import ngettext
 from marshmallow import ValidationError
 
-from superset import event_logger
+from superset import event_logger, is_feature_enabled
 from superset.commands.dataset.create import CreateDatasetCommand
 from superset.commands.dataset.delete import DeleteDatasetCommand
 from superset.commands.dataset.duplicate import DuplicateDatasetCommand
@@ -65,9 +65,10 @@ from superset.datasets.schemas import (
     GetOrCreateDatasetSchema,
     openapi_spec_methods_override,
 )
+from superset.projects.models import ProjectCorrelationType
 from superset.utils import json
 from superset.utils.core import parse_boolean_string
-from superset.views.base import DatasourceFilter
+from superset.views.base import DatasourceFilter, ProjectFilter
 from superset.views.base_api import (
     BaseSupersetModelRestApi,
     RelatedFieldFilter,
@@ -83,6 +84,12 @@ logger = logging.getLogger(__name__)
 class DatasetRestApi(BaseSupersetModelRestApi):
     datamodel = SQLAInterface(SqlaTable)
     base_filters = [["id", DatasourceFilter, lambda: []]]
+    if is_feature_enabled("USE_PROJECT"):
+        base_filters.append([
+            "project_id",
+            ProjectFilter,
+            {"request": request, "type": ProjectCorrelationType.DATASET}
+        ])
 
     resource_name = "dataset"
     allow_browser_login = True
@@ -683,7 +690,7 @@ class DatasetRestApi(BaseSupersetModelRestApi):
     @statsd_metrics
     @event_logger.log_this_with_context(
         action=lambda self, *args, **kwargs: f"{self.__class__.__name__}"
-        f".related_objects",
+                                             f".related_objects",
         log_to_statsd=False,
     )
     def related_objects(self, pk: int) -> Response:
@@ -940,7 +947,7 @@ class DatasetRestApi(BaseSupersetModelRestApi):
     @statsd_metrics
     @event_logger.log_this_with_context(
         action=lambda self, *args, **kwargs: f"{self.__class__.__name__}"
-        f".get_or_create_dataset",
+                                             f".get_or_create_dataset",
         log_to_statsd=False,
     )
     def get_or_create_dataset(self) -> Response:
@@ -1006,7 +1013,7 @@ class DatasetRestApi(BaseSupersetModelRestApi):
     @statsd_metrics
     @event_logger.log_this_with_context(
         action=lambda self, *args, **kwargs: f"{self.__class__.__name__}"
-        f".warm_up_cache",
+                                             f".warm_up_cache",
         log_to_statsd=False,
     )
     def warm_up_cache(self) -> Response:

@@ -93,6 +93,7 @@ from superset.dashboards.schemas import (
 from superset.extensions import event_logger
 from superset.models.dashboard import Dashboard
 from superset.models.embedded_dashboard import EmbeddedDashboard
+from superset.projects.models import ProjectCorrelationType
 from superset.tasks.thumbnails import (
     cache_dashboard_screenshot,
     cache_dashboard_thumbnail,
@@ -105,6 +106,7 @@ from superset.utils.screenshots import (
     DEFAULT_DASHBOARD_WINDOW_SIZE,
 )
 from superset.utils.urls import get_url_path
+from superset.views.base import ProjectFilter
 from superset.views.base_api import (
     BaseSupersetModelRestApi,
     RelatedFieldFilter,
@@ -267,6 +269,12 @@ class DashboardRestApi(BaseSupersetModelRestApi):
     base_filters = [
         ["id", DashboardAccessFilter, lambda: []],
     ]
+    if is_feature_enabled("USE_PROJECT"):
+        base_filters.append([
+            "project_id",
+            ProjectFilter,
+            {"request": request, "type": ProjectCorrelationType.DASHBOARD}
+        ])
 
     order_rel_fields = {
         "slices": ("slice_name", "asc"),

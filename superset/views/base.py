@@ -33,6 +33,7 @@ from flask import (
     redirect,
     Response,
     session,
+    Request,
 )
 from flask_appbuilder import BaseView, expose, Model, ModelView
 from flask_appbuilder.actions import action
@@ -74,6 +75,8 @@ from superset.utils.filters import get_dataset_access_filters
 from superset.views.error_handling import json_error_response
 
 from .utils import bootstrap_user_data
+from ..projects.models import ProjectCorrelationObject, ProjectCorrelationType
+from ..utils.core import get_project_id
 
 FRONTEND_CONF_KEYS = (
     "SUPERSET_WEBSERVER_TIMEOUT",
@@ -543,6 +546,24 @@ class DatasourceFilter(BaseFilter):  # pylint: disable=too-few-public-methods
             models.Database.id == self.model.database_id,
         )
         return query.filter(get_dataset_access_filters(self.model))
+
+
+class ProjectFilter(BaseFilter):
+    def apply(self, query: Query, values) -> Query:
+        req = values.get("request")
+        object_type = values.get("type")
+        if req is None or object_type is None:
+            return query
+        project_id = get_project_id(req)
+        if project_id is None:
+            return query
+
+        return (
+            query.join(ProjectCorrelationObject,
+                       ProjectCorrelationObject.object_id == self.model.id)
+            .filter(ProjectCorrelationObject.project_id == project_id)
+            .filter(ProjectCorrelationObject.object_type == object_type)
+        )
 
 
 class CsvResponse(Response):
