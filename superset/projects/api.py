@@ -17,28 +17,18 @@
 # pylint: disable=too-many-lines
 import logging
 
-from flask import Response, g, session, request
+from flask import Response
 from flask_appbuilder import has_access, permission_name
 from flask_appbuilder.api import expose, safe
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder.security.decorators import protect
-from flask_appbuilder.security.sqla.models import User
-from flask_jwt_extended.exceptions import NoAuthorizationError
-from marshmallow import ValidationError
 
 from superset import event_logger, db
-from superset.commands.projects.create import CreateProjectCommand
-from superset.commands.projects.set_managers import SetManagersCommand
 from superset.constants import RouteMethod, MODEL_API_RW_METHOD_PERMISSION_MAP
-from superset.daos.project import ProjectDAO, UserProjectDAO
-from superset.projects.models import Project, UserProject
-from superset.projects.schemas import ProjectPostSchema, SetProjectManagersSchema, \
-    SetManagerProjectsSchema
-from superset.utils.core import set_project, get_project_id
+from superset.projects.models import Project
 from superset.views.base_api import (
     BaseSupersetModelRestApi, requires_json, statsd_metrics,
 )
-from superset.views.users.schemas import UserResponseSchema
 
 logger = logging.getLogger(__name__)
 

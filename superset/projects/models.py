@@ -1,3 +1,5 @@
+import enum
+
 from flask_appbuilder import Model
 from sqlalchemy import (
     Column,
@@ -23,29 +25,14 @@ class Project(Model):
     attrs_json = Column(Text, nullable=True)
 
 
-class UserProject(Model):
-    __tablename__ = "ab_user_project"
-
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("ab_user.id"), nullable=False)
-    project_id = Column(Integer, ForeignKey("ab_project.id"), nullable=False)
-
-    user = relationship("User")
-    project = relationship("Project")
-
-    __table_args__ = (
-        UniqueConstraint('user_id', 'project_id', name='user_project_unique_constraint')
-    )
-
-
-class ProjectCorrelationType(Enum):
+class ProjectCorrelationType(enum.Enum):
     DASHBOARD = "dashboard"
     SLICE = "slice"
     DATASET = "dataset"
     USER = "user"
 
 
-class ProjectCorrelationObject(Model, AuditMixinNullable):
+class ProjectCorrelationObject(Model):
     """An association between an object and a tag."""
 
     __tablename__ = "project_correlation_object"
@@ -55,12 +42,10 @@ class ProjectCorrelationObject(Model, AuditMixinNullable):
         Integer,
         ForeignKey("dashboards.id"),
         ForeignKey("slices.id"),
-        ForeignKey("datasets.id"),
+        ForeignKey("tables.id"),
         ForeignKey("ab_user.id"),
     )
     object_type = Column(Enum(ProjectCorrelationType))
-
-    project = relationship("Project", back_populates="objects")
 
     __table_args__ = (
         UniqueConstraint(

@@ -10,7 +10,6 @@ from superset.daos.base import BaseDAO
 from superset.extensions import db
 from superset.projects.models import (
     Project,
-    UserProject,
     ProjectCorrelationObject,
     ProjectCorrelationType
 )
@@ -26,39 +25,39 @@ class ProjectDAO(BaseDAO[Project]):
             .one_or_none()
         )
 
-    @staticmethod
-    def get_list_by_user(user: User) -> List[Dict[str, Any]]:
-        """
-        @rtype: List[str]
-        """
-        session = db.session
-        try:
-            return (session.query(Project)
-                    .join(UserProject, Project.id == UserProject.project_id)
-                    .filter(UserProject.user_id == user.id)
-                    .all())
-        finally:
-            session.close()
+    # @staticmethod
+    # def get_list_by_user(user: User) -> List[Dict[str, Any]]:
+    #     """
+    #     @rtype: List[str]
+    #     """
+    #     session = db.session
+    #     try:
+    #         return (session.query(Project)
+    #                 .join(UserProject, Project.id == UserProject.project_id)
+    #                 .filter(UserProject.user_id == user.id)
+    #                 .all())
+    #     finally:
+    #         session.close()
 
     @staticmethod
     def get_all_list() -> List[int]:
         project_ids = db.session.query(Project.project_id).all()
         return [row[0] for row in project_ids]
 
-    @staticmethod
-    def is_manager(user: User, project_id: int) -> bool:
-        count = (db.session.query(func.count())
-                 .filter(UserProject.user_id == user.id,
-                         UserProject.project_id == project_id)
-                 .scalar())
-        return count != 0
+    # @staticmethod
+    # def is_manager(user: User, project_id: int) -> bool:
+    #     count = (db.session.query(func.count())
+    #              .filter(UserProject.user_id == user.id,
+    #                      UserProject.project_id == project_id)
+    #              .scalar())
+    #     return count != 0
 
-    @staticmethod
-    def validate_uniqueness(project_name: str) -> bool:
-        project_query = db.session.query(Project).filter(
-            Project.project_name == project_name
-        )
-        return not db.session.query(project_query.exists()).scalar()
+    # @staticmethod
+    # def validate_uniqueness(project_name: str) -> bool:
+    #     project_query = db.session.query(Project).filter(
+    #         Project.project_name == project_name
+    #     )
+    #     return not db.session.query(project_query.exists()).scalar()
 
     @staticmethod
     def create_correlation(project_id, object_id, object_type: ProjectCorrelationType):
@@ -74,17 +73,17 @@ class ProjectDAO(BaseDAO[Project]):
         db.session.commit()
 
 
-class UserProjectDAO(BaseDAO[UserProject]):
-
-    @staticmethod
-    def get_managers_by_project(project_id):
-        return (db.session.query(User)
-                .join(UserProject, User.id == UserProject.user_id)
-                .filter(UserProject.project_id == project_id)
-                .all())
-
-    @classmethod
-    def get_projects_by_manager(cls, user_id):
-        return (db.session.query(UserProject.project_id)
-                .filter(UserProject.user_id == user_id)
-                .all())
+# class UserProjectDAO(BaseDAO[UserProject]):
+#
+#     @staticmethod
+#     def get_managers_by_project(project_id):
+#         return (db.session.query(User)
+#                 .join(UserProject, User.id == UserProject.user_id)
+#                 .filter(UserProject.project_id == project_id)
+#                 .all())
+#
+#     @classmethod
+#     def get_projects_by_manager(cls, user_id):
+#         return (db.session.query(UserProject.project_id)
+#                 .filter(UserProject.user_id == user_id)
+#                 .all())
