@@ -38,6 +38,7 @@ import { Logger, LOG_ACTIONS_SPA_NAVIGATION } from 'src/logger/LogUtils';
 import setupExtensions from 'src/setup/setupExtensions';
 import { logEvent } from 'src/logger/actions';
 import { store } from 'src/views/store';
+import { FeatureFlag, isFeatureEnabled, makeApi } from '@superset-ui/core';
 import { RootContextProviders } from './RootContextProviders';
 import { ScrollToTop } from './ScrollToTop';
 
@@ -68,30 +69,46 @@ const LocationPathnameLogger = () => {
   return <></>;
 };
 
-const App = () => (
-  <Router>
-    <ScrollToTop />
-    <LocationPathnameLogger />
-    <RootContextProviders>
-      <GlobalStyles />
-      <Menu
-        data={bootstrapData.common.menu_data}
-        isFrontendRoute={isFrontendRoute}
-      />
-      <Switch>
-        {routes.map(({ path, Component, props = {}, Fallback = Loading }) => (
-          <Route path={path} key={path}>
-            <Suspense fallback={<Fallback />}>
-              <ErrorBoundary>
-                <Component user={bootstrapData.user} {...props} />
-              </ErrorBoundary>
-            </Suspense>
-          </Route>
-        ))}
-      </Switch>
-      <ToastContainer />
-    </RootContextProviders>
-  </Router>
-);
+const App = () => {
+  if (isFeatureEnabled(FeatureFlag.UseProject)) {
+    const api = makeApi<void, any>({
+      method: 'GET',
+      endpoint: `/api/v1/project/get_list_by_manager`,
+      headers: { 'Content-Type': 'application/json' },
+    });
+    api().then(res => {
+      store.dispatch({ type: 'SET_PROJECTS', projects: res.data.projects });
+      store.dispatch({
+        type: 'CHANGE_CURRENT_PROJECT',
+        id: res.data.current_project,
+      });
+    });
+  }
+  return (
+    <Router>
+      <ScrollToTop />
+      <LocationPathnameLogger />
+      <RootContextProviders>
+        <GlobalStyles />
+        <Menu
+          data={bootstrapData.common.menu_data}
+          isFrontendRoute={isFrontendRoute}
+        />
+        <Switch>
+          {routes.map(({ path, Component, props = {}, Fallback = Loading }) => (
+            <Route path={path} key={path}>
+              <Suspense fallback={<Fallback />}>
+                <ErrorBoundary>
+                  <Component user={bootstrapData.user} {...props} />
+                </ErrorBoundary>
+              </Suspense>
+            </Route>
+          ))}
+        </Switch>
+        <ToastContainer />
+      </RootContextProviders>
+    </Router>
+  );
+};
 
 export default hot(App);
