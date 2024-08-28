@@ -66,6 +66,7 @@ class CreateDatasetCommand(CreateMixin, BaseCommand):
         table_name = self._properties["table_name"]
         sql = self._properties.get("sql")
         owner_ids: Optional[list[int]] = self._properties.get("owners")
+        project_id = self._properties.get("project_id", None)
 
         # Validate/Populate database
         database = DatasetDAO.get_database_by_id(database_id)
@@ -80,7 +81,7 @@ class CreateDatasetCommand(CreateMixin, BaseCommand):
 
             table = Table(table_name, schema, catalog)
 
-            if not DatasetDAO.validate_uniqueness(database, table):
+            if not DatasetDAO.validate_uniqueness(database, table, None, project_id):
                 exceptions.append(DatasetExistsValidationError(table))
 
         # Validate table exists on dataset if sql is not provided
