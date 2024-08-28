@@ -41,7 +41,9 @@ import Chart, { Slice } from 'src/types/Chart';
 import copyTextToClipboard from 'src/utils/copy';
 import SupersetText from 'src/utils/textUtils';
 import { DatabaseObject } from 'src/features/databases/types';
+import { useSelector } from 'react-redux';
 import { FavoriteStatus, ImportResourceName } from './types';
+import { RootState } from '../store';
 
 interface ListViewResourceState<D extends object = any> {
   loading: boolean;
@@ -87,7 +89,9 @@ export function useListViewResource<D extends object = any>(
     permissions: [],
     bulkSelectEnabled: false,
   });
-
+  const current_project = useSelector(
+    (state: RootState) => state.current_project,
+  );
   function updateState(update: Partial<ListViewResourceState<D>>) {
     setState(currentState => ({ ...currentState, ...update }));
   }
@@ -191,7 +195,7 @@ export function useListViewResource<D extends object = any>(
           updateState({ loading: false });
         });
     },
-    [baseFilters],
+    [baseFilters, current_project],
   );
 
   return {
