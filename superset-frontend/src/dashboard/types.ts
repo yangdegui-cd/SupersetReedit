@@ -32,7 +32,10 @@ import componentTypes from 'src/dashboard/util/componentTypes';
 import Database from 'src/types/Database';
 import { UrlParamEntries } from 'src/utils/urlUtils';
 
-import { UserWithPermissionsAndRoles } from 'src/types/bootstrapTypes';
+import {
+  ProjectObject,
+  UserWithPermissionsAndRoles,
+} from 'src/types/bootstrapTypes';
 import { ChartState } from '../explore/types';
 
 export type { Dashboard } from 'src/types/Dashboard';
@@ -163,6 +166,8 @@ export type RootState = {
   impressionId: string;
   nativeFilters: NativeFiltersState;
   user: UserWithPermissionsAndRoles;
+  projects: ProjectObject[];
+  current_project: number;
 };
 
 /** State of dashboardLayout in redux */

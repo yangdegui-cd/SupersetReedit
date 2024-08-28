@@ -175,3 +175,8 @@ export function isUserWithPermissionsAndRoles(
 ): user is UserWithPermissionsAndRoles {
   return isUser(user) && 'permissions' in user && 'roles' in user;
 }
+
+export interface ProjectObject {
+  project_name: string;
+  id: number;
+}
