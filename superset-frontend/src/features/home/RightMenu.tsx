@@ -31,12 +31,14 @@ import {
   SupersetTheme,
   SupersetClient,
   getExtensionsRegistry,
-  useTheme,
-} from '@superset-ui/core';
+  // useTheme,
+  FeatureFlag,
+  isFeatureEnabled,
+} from "@superset-ui/core";
 import { MainNav as Menu } from 'src/components/Menu';
 import { Tooltip } from 'src/components/Tooltip';
 import Icons from 'src/components/Icons';
-import Label from 'src/components/Label';
+// import Label from 'src/components/Label';
 import { findPermission } from 'src/utils/findPermission';
 import { isUserAdmin } from 'src/dashboard/util/permissionUtils';
 import {
@@ -55,6 +57,8 @@ import {
   GlobalMenuDataOptions,
   RightMenuProps,
 } from './types';
+import ProjectPicker from "./ProjectPicker";
+
 
 const extensionsRegistry = getExtensionsRegistry();
 
@@ -100,9 +104,9 @@ const StyledAnchor = styled.a`
   padding-left: ${({ theme }) => theme.gridUnit}px;
 `;
 
-const tagStyles = (theme: SupersetTheme) => css`
-  color: ${theme.colors.grayscale.light5};
-`;
+// const tagStyles = (theme: SupersetTheme) => css`
+//   color: ${theme.colors.grayscale.light5};
+// `;
 
 const styledChildMenu = (theme: SupersetTheme) => css`
   &:hover {
@@ -156,6 +160,7 @@ const RightMenu = ({
   const canChart = findPermission('can_write', 'Chart', roles);
   const canDatabase = findPermission('can_write', 'Database', roles);
   const canDataset = findPermission('can_write', 'Dataset', roles);
+  const useProject = isFeatureEnabled(FeatureFlag.UseProject)
 
   const { canUploadData, canUploadCSV, canUploadColumnar, canUploadExcel } =
     uploadUserPerms(
@@ -352,7 +357,7 @@ const RightMenu = ({
     localStorage.removeItem('redux');
   };
 
-  const theme = useTheme();
+  // const theme = useTheme();
 
   return (
     <StyledDiv align={align}>
@@ -364,6 +369,7 @@ const RightMenu = ({
           onDatabaseAdd={handleDatabaseAdd}
         />
       )}
+      {useProject && <ProjectPicker />}
       {canUploadCSV && (
         <UploadDataModal
           onHide={() => setShowCSVUploadModal(false)}
@@ -388,20 +394,20 @@ const RightMenu = ({
           type="columnar"
         />
       )}
-      {environmentTag?.text && (
-        <Label
-          css={{ borderRadius: `${theme.gridUnit * 125}px` }}
-          color={
-            /^#(?:[0-9a-f]{3}){1,2}$/i.test(environmentTag.color)
-              ? environmentTag.color
-              : environmentTag.color
-                  .split('.')
-                  .reduce((o, i) => o[i], theme.colors)
-          }
-        >
-          <span css={tagStyles}>{environmentTag.text}</span>
-        </Label>
-      )}
+      {/*{environmentTag?.text && (*/}
+      {/*  <Label*/}
+      {/*    css={{ borderRadius: `${theme.gridUnit * 125}px` }}*/}
+      {/*    color={*/}
+      {/*      /^#(?:[0-9a-f]{3}){1,2}$/i.test(environmentTag.color)*/}
+      {/*        ? environmentTag.color*/}
+      {/*        : environmentTag.color*/}
+      {/*          .split(".")*/}
+      {/*          .reduce((o, i) => o[i], theme.colors)*/}
+      {/*    }*/}
+      {/*  >*/}
+      {/*    <span css={tagStyles}>{environmentTag.text}</span>*/}
+      {/*  </Label>*/}
+      {/*)}*/}
       <Menu
         selectable={false}
         mode="horizontal"
@@ -608,7 +614,7 @@ const RightMenu = ({
 const RightMenuWithQueryWrapper: FC<RightMenuProps> = props => {
   const [, setQuery] = useQueryParams({
     databaseAdded: BooleanParam,
-    datasetAdded: BooleanParam,
+    datasetAdded: BooleanParam
   });
 
   return <RightMenu setQuery={setQuery} {...props} />;
