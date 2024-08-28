@@ -161,6 +161,7 @@ class SupersetAppInitializer:  # pylint: disable=too-many-public-methods
         from superset.views.annotations import AnnotationLayerView
         from superset.views.api import Api
         from superset.views.chart.views import SliceAsync, SliceModelView
+        from superset.views.project.views import ProjectView
         from superset.views.core import Superset
         from superset.views.css_templates import (
             CssTemplateAsyncModelView,
@@ -188,6 +189,7 @@ class SupersetAppInitializer:  # pylint: disable=too-many-public-methods
         from superset.views.sqllab import SqllabView
         from superset.views.tags import TagModelView, TagView
         from superset.views.users.api import CurrentUserRestApi, UserRestApi
+        from superset.projects.api import ProjectRestApi
 
         set_app_error_handlers(self.superset_app)
 
@@ -225,6 +227,8 @@ class SupersetAppInitializer:  # pylint: disable=too-many-public-methods
         appbuilder.add_api(SavedQueryRestApi)
         appbuilder.add_api(TagRestApi)
         appbuilder.add_api(SqlLabRestApi)
+        appbuilder.add_api(ProjectRestApi)
+
         #
         # Setup regular views
         #
@@ -316,10 +320,22 @@ class SupersetAppInitializer:  # pylint: disable=too-many-public-methods
         appbuilder.add_view_no_menu(TaggedObjectsModelView)
         appbuilder.add_view_no_menu(TagView)
         appbuilder.add_view_no_menu(ReportView)
+        appbuilder.add_view_no_menu(ProjectView)
 
         #
         # Add links
         #
+
+        appbuilder.add_link(
+            "Project",
+            label=__("Project"),
+            href="/project/list/",
+            icon="fa-plus",
+            category="Manage",
+            category_label=__("Manage"),
+            category_icon="fa-wrench",
+        )
+
         appbuilder.add_link(
             "SQL Editor",
             label=__("SQL Lab"),
