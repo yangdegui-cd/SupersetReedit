@@ -23,8 +23,10 @@ from flask_appbuilder.api import expose, safe
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder.security.decorators import protect
 from flask_jwt_extended.exceptions import NoAuthorizationError
+from marshmallow import ValidationError
 
 from superset import event_logger, db, is_feature_enabled
+from superset.commands.project.create import CreateProjectCommand
 from superset.constants import RouteMethod, MODEL_API_RW_METHOD_PERMISSION_MAP
 from superset.daos.project import ProjectDAO
 from superset.projects.models import Project
@@ -62,7 +64,15 @@ class ProjectRestApi(BaseSupersetModelRestApi):
     )
     @requires_json
     def post(self) -> Response:
-        return self.response(400, message="todo: implement")
+        try:
+            item = self.add_model_schema.load(request.json)
+        except ValidationError as error:
+            return self.response_400(message=error.messages)
+        try:
+            new_model = CreateProjectCommand(item).run()
+            return self.response(201, id=new_model.id)
+        except ValidationError as ex:
+            return self.response_400(message=ex.messages)
 
     @expose("/get_list_by_manager", methods=("GET",))
     @has_access
