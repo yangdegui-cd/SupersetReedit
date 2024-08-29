@@ -32,8 +32,10 @@ from superset.commands.dashboard.exceptions import (
 )
 from superset.commands.utils import populate_roles, update_tags, validate_tags
 from superset.daos.dashboard import DashboardDAO
+from superset.daos.project_correlation import ProjectCorrelationDAO
 from superset.exceptions import SupersetSecurityException
 from superset.models.dashboard import Dashboard
+from superset.projects.models import ProjectCorrelationType
 from superset.tags.models import ObjectType
 from superset.utils import json
 from superset.utils.decorators import on_error, transaction
@@ -62,7 +64,11 @@ class UpdateDashboardCommand(UpdateMixin, BaseCommand):
                 dashboard,
                 data=json.loads(self._properties.get("json_metadata", "{}")),
             )
-
+        ProjectCorrelationDAO.create_correlation(
+            project_id=self._properties.get("project_id", None),
+            object_id=dashboard.id,
+            object_type=ProjectCorrelationType.DASHBOARD,
+        )
         return dashboard
 
     def validate(self) -> None:
