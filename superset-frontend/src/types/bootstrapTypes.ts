@@ -177,6 +177,8 @@ export function isUserWithPermissionsAndRoles(
 }
 
 export interface ProjectObject {
+  name: string;
   project_name: string;
-  id: number;
+  attr_json?: Object;
+  id?: number;
 }
