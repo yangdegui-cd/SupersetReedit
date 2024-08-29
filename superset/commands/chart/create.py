@@ -34,7 +34,7 @@ from superset.commands.chart.exceptions import (
 from superset.commands.utils import get_datasource_by_id
 from superset.daos.chart import ChartDAO
 from superset.daos.dashboard import DashboardDAO
-from superset.daos.project import ProjectDAO
+from superset.daos.project_correlation import ProjectCorrelationDAO
 from superset.projects.models import ProjectCorrelationType
 from superset.utils.decorators import on_error, transaction
 
@@ -51,7 +51,7 @@ class CreateChartCommand(CreateMixin, BaseCommand):
         self._properties["last_saved_at"] = datetime.now()
         self._properties["last_saved_by"] = g.user
         chart = ChartDAO.create(attributes=self._properties)
-        ProjectDAO.create_correlation(
+        ProjectCorrelationDAO.create_correlation(
             project_id=self._properties["project_id"],
             object_id=chart.id,
             object_type=ProjectCorrelationType.SLICE,

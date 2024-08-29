@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import List, Dict, Any
 from flask_appbuilder.security.sqla.models import User
-from superset import is_feature_enabled
 from superset.daos.base import BaseDAO
 from superset.extensions import db
 from superset.projects.models import (
@@ -43,19 +42,6 @@ class ProjectDAO(BaseDAO[Project]):
     def get_all_list() -> List[int]:
         project_ids = db.session.query(Project.project_id).all()
         return [row[0] for row in project_ids]
-
-    @staticmethod
-    def create_correlation(project_id, object_id, object_type: ProjectCorrelationType):
-        if is_feature_enabled("USE_PROJECT") is False or project_id is None or object_id is None or object_type is None:
-            return None
-
-        correlation = ProjectCorrelationObject(
-            project_id=project_id,
-            object_id=object_id,
-            object_type=object_type,
-        )
-        db.session.add(correlation)
-        db.session.commit()
 
     @classmethod
     def is_manager(cls, user, project_id):

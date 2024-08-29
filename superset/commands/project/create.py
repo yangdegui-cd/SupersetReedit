@@ -5,6 +5,7 @@ from marshmallow import ValidationError
 from superset import db
 from superset.commands.base import BaseCommand
 from superset.daos.project import ProjectDAO
+from superset.daos.project_correlation import ProjectCorrelationDAO
 from superset.projects.models import ProjectCorrelationType
 
 
@@ -23,7 +24,7 @@ class CreateProjectCommand(BaseCommand):
                               .all())
 
             for (user_id,) in admin_user_ids:
-                ProjectDAO.create_correlation(
+                ProjectCorrelationDAO.create_correlation(
                     project.id,
                     user_id,
                     ProjectCorrelationType.USER,
