@@ -30,6 +30,7 @@ from superset.commands.project.create import CreateProjectCommand
 from superset.constants import RouteMethod, MODEL_API_RW_METHOD_PERMISSION_MAP
 from superset.daos.project import ProjectDAO
 from superset.projects.models import Project
+from superset.projects.schemas import ProjectPostSchema
 from superset.utils.core import get_project_id, set_project
 from superset.views.base_api import (
     BaseSupersetModelRestApi, requires_json, statsd_metrics,
@@ -53,6 +54,7 @@ class ProjectRestApi(BaseSupersetModelRestApi):
     edit_columns = ["project_name"]
     add_columns = ["name", "project_name"]
     search_columns = ["project_name"]
+    add_model_schema = ProjectPostSchema()
 
     @expose("/", methods=("POST",))
     @protect()

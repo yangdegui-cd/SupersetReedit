@@ -5,7 +5,7 @@ from marshmallow import ValidationError
 from superset import db
 from superset.commands.base import BaseCommand
 from superset.daos.project import ProjectDAO
-from superset.projects.models import ProjectCorrelationObject, ProjectCorrelationType
+from superset.projects.models import ProjectCorrelationType
 
 
 class CreateProjectCommand(BaseCommand):
@@ -15,7 +15,7 @@ class CreateProjectCommand(BaseCommand):
     def run(self) -> Any:
         self.validate()
         try:
-            project = ProjectDAO.create(attributes=self._properties, commit=False)
+            project = ProjectDAO.create(attributes=self._properties)
             db.session.flush()
             admin_user_ids = (db.session.query(User.id)
                               .join(User.roles)  # 使用 join 来访问 roles 属性
@@ -23,14 +23,12 @@ class CreateProjectCommand(BaseCommand):
                               .all())
 
             for (user_id,) in admin_user_ids:
-                ProjectCorrelationObject.create(
-                    attributes={
-                        "project_id": project.id,
-                        "object_id": user_id,
-                        "object_type": ProjectCorrelationType.USER,
-                    },
-                    commit=False,
+                ProjectDAO.create_correlation(
+                    project.id,
+                    user_id,
+                    ProjectCorrelationType.USER,
                 )
+
             db.session.commit()
         except Exception as ex:
             db.session.rollback()
