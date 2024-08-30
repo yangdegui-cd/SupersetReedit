@@ -23,7 +23,7 @@ from flask import g
 from flask_appbuilder.models.sqla import Model
 from marshmallow import ValidationError
 
-from superset import security_manager
+from superset import security_manager, db
 from superset.commands.base import BaseCommand, CreateMixin
 from superset.commands.chart.exceptions import (
     ChartCreateFailedError,
@@ -51,6 +51,7 @@ class CreateChartCommand(CreateMixin, BaseCommand):
         self._properties["last_saved_at"] = datetime.now()
         self._properties["last_saved_by"] = g.user
         chart = ChartDAO.create(attributes=self._properties)
+        db.session.flush()
         ProjectCorrelationDAO.create_correlation(
             project_id=self._properties["project_id"],
             object_id=chart.id,

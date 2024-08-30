@@ -21,6 +21,7 @@ from typing import Any, Optional
 from flask_appbuilder.models.sqla import Model
 from marshmallow import ValidationError
 
+from superset import db
 from superset.commands.base import BaseCommand, CreateMixin
 from superset.commands.dashboard.exceptions import (
     DashboardCreateFailedError,
@@ -44,6 +45,7 @@ class CreateDashboardCommand(CreateMixin, BaseCommand):
     def run(self) -> Model:
         self.validate()
         new_dashboard = DashboardDAO.create(attributes=self._properties)
+        db.session.flush()
         ProjectCorrelationDAO.create_correlation(
             project_id=self._properties["project_id"],
             object_id=new_dashboard.id,
