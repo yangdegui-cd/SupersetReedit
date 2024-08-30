@@ -12,8 +12,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-from superset.models.helpers import AuditMixinNullable
-
 
 class Project(Model):
     __tablename__ = "ab_project"
@@ -23,6 +21,42 @@ class Project(Model):
     name = Column(String(256), nullable=False)
     project_name = Column(String(256), index=True)
     attrs_json = Column(Text, nullable=True)
+
+    users = relationship(
+        'User',
+        secondary="project_correlation_object",
+        secondaryjoin="and_(User.id == ProjectCorrelationObject.object_id, "
+                      "ProjectCorrelationObject.object_type == 'user')",
+        primaryjoin="ProjectCorrelationObject.project_id == Project.id",
+        viewonly=True,
+    )
+
+    slices = relationship(
+        "Slice",
+        secondary="project_correlation_object",
+        secondaryjoin="and_(Slice.id == ProjectCorrelationObject.object_id, "
+                      "ProjectCorrelationObject.object_type == 'slice')",
+        primaryjoin="ProjectCorrelationObject.project_id == Project.id",
+        viewonly=True,
+    )
+
+    dashboards = relationship(
+        "Dashboard",
+        secondary="project_correlation_object",
+        secondaryjoin="and_(Dashboard.id == ProjectCorrelationObject.object_id, "
+                      "ProjectCorrelationObject.object_type == 'dashboard')",
+        primaryjoin="ProjectCorrelationObject.project_id == Project.id",
+        viewonly=True,
+    )
+
+    tables = relationship(
+        "SqlaTable",
+        secondary="project_correlation_object",
+        secondaryjoin="and_(SqlaTable.id == ProjectCorrelationObject.object_id, "
+                      "ProjectCorrelationObject.object_type == 'dataset')",
+        primaryjoin="ProjectCorrelationObject.project_id == Project.id",
+        viewonly=True,
+    )
 
 
 class ProjectCorrelationType(enum.Enum):
