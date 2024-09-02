@@ -17,24 +17,33 @@
 # pylint: disable=too-many-lines
 import logging
 
-from flask import Response, g, request, session
+from flask import Response, g, request
 from flask_appbuilder import has_access, permission_name
 from flask_appbuilder.api import expose, safe
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder.security.decorators import protect
+from flask_appbuilder.security.sqla.models import User
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from marshmallow import ValidationError
-
 from superset import event_logger, db, is_feature_enabled
 from superset.commands.project.create import CreateProjectCommand
+from superset.commands.project.set_managers import SetManagersCommand
 from superset.constants import RouteMethod, MODEL_API_RW_METHOD_PERMISSION_MAP
 from superset.daos.project import ProjectDAO
+from superset.daos.project_correlation import ProjectCorrelationDAO
 from superset.projects.models import Project
-from superset.projects.schemas import ProjectPostSchema
+from superset.projects.schemas import (
+    ProjectPostSchema,
+    SetProjectManagersSchema,
+    SetManagerProjectsSchema,
+)
 from superset.utils.core import get_project_id, set_project
 from superset.views.base_api import (
-    BaseSupersetModelRestApi, requires_json, statsd_metrics,
+    BaseSupersetModelRestApi,
+    requires_json,
+    statsd_metrics,
 )
+from superset.views.users.schemas import UserResponseSchema
 
 logger = logging.getLogger(__name__)
 
@@ -47,14 +56,21 @@ class ProjectRestApi(BaseSupersetModelRestApi):
     class_permission_name = "Project"
     method_permission_name = MODEL_API_RW_METHOD_PERMISSION_MAP
     include_route_methods = RouteMethod.REST_MODEL_VIEW_CRUD_SET | {
-        "get_list_by_manager",
+        "bulk_delete",
         "change_project",
+        "get_list_by_manager",
+        "get_managers",
+        "get_projects",
+        "set_managers_by_project",
+        "set_managers_by_manager",
     }
     list_columns = ["id", "name", "project_name", ]
     edit_columns = ["project_name"]
     add_columns = ["name", "project_name"]
     search_columns = ["project_name"]
     add_model_schema = ProjectPostSchema()
+    set_managers_by_project_schema = SetProjectManagersSchema()
+    set_managers_by_manager_schema = SetManagerProjectsSchema()
 
     @expose("/", methods=("POST",))
     @protect()
@@ -126,3 +142,90 @@ class ProjectRestApi(BaseSupersetModelRestApi):
             return self.response(200, message="Project changed successfully")
         else:
             return self.response(400, message="Not authorized to change project")
+
+    @expose("/get_managers/<project_id>", methods=("GET",))
+    @safe
+    @statsd_metrics
+    @event_logger.log_this_with_context(
+        action=lambda self, *args,
+                      **kwargs: f"{self.__class__.__name__}.get_managers",
+        log_to_statsd=False,
+    )
+    @has_access
+    @permission_name("read")
+    def get_managers(self, project_id: int):
+        try:
+            all_managers = db.session.query(User).all()
+            project = ProjectDAO.find_by_id(project_id)
+            project_managers = project.users
+            return self.response(200, data={
+                "all": [UserResponseSchema().dump(m) for m in all_managers],
+                "managers": [UserResponseSchema().dump(m) for m in project_managers]
+            })
+        except NoAuthorizationError:
+            return self.response_401()
+
+    @expose("/get_projects/<user_id>", methods=("GET",))
+    @safe
+    @statsd_metrics
+    @event_logger.log_this_with_context(
+        action=lambda self, *args,
+                      **kwargs: f"{self.__class__.__name__}.get_managers",
+        log_to_statsd=False,
+    )
+    @has_access
+    @permission_name("read")
+    def get_projects(self, user_id: int):
+        try:
+            projects = ProjectCorrelationDAO.get_projects_by_user(user_id)
+            return self.response(200, projects=[p.project_id for p in projects])
+        except NoAuthorizationError:
+            return self.response_401()
+
+    @expose("/set_managers_by_project", methods=("POST",))
+    @safe
+    @statsd_metrics
+    @event_logger.log_this_with_context(
+        action=lambda self, *args,
+                      **kwargs: f"{self.__class__.__name__}.set_managers",
+        log_to_statsd=False,
+    )
+    @has_access
+    @permission_name("write")
+    def set_managers_by_project(self):
+        try:
+            item = self.set_managers_by_project_schema.load(request.json)
+        except ValidationError as error:
+            return self.response_400(message=error.messages)
+
+        try:
+            SetManagersCommand(item).run("project")
+            return self.response(200)
+        except NoAuthorizationError:
+            return self.response_401()
+        except Exception as error:
+            return self.response_500(message=str(error))
+
+    @expose("/set_managers_by_manager", methods=("POST",))
+    @safe
+    @statsd_metrics
+    @event_logger.log_this_with_context(
+        action=lambda self, *args,
+                      **kwargs: f"{self.__class__.__name__}.set_managers",
+        log_to_statsd=False,
+    )
+    @has_access
+    @permission_name("write")
+    def set_managers_by_manager(self):
+        try:
+            item = self.set_managers_by_manager_schema.load(request.json)
+        except ValidationError as error:
+            return self.response_400(message=error.messages)
+
+        try:
+            SetManagersCommand(item).run("manager")
+            return self.response(200)
+        except NoAuthorizationError:
+            return self.response_401()
+        except Exception as error:
+            return self.response_500(message=str(error))
