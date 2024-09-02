@@ -35,6 +35,7 @@ import threading
 import traceback
 import uuid
 import zlib
+import redis
 from collections.abc import Iterable, Iterator, Sequence
 from contextlib import closing, contextmanager
 from dataclasses import dataclass
@@ -58,7 +59,7 @@ import pandas as pd
 import sqlalchemy as sa
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509 import Certificate, load_pem_x509_certificate
-from flask import current_app, g, request
+from flask import current_app, g, Markup, request, Request
 from flask_appbuilder import SQLA
 from flask_appbuilder.security.sqla.models import User
 from flask_babel import gettext as __
@@ -117,6 +118,11 @@ JS_MAX_INTEGER = 9007199254740991  # Largest int Java Script can handle 2^53-1
 InputType = TypeVar("InputType")  # pylint: disable=invalid-name
 
 ADHOC_FILTERS_REGEX = re.compile("^adhoc_filters")
+
+REDIS_KEY = {
+    "current_project": "superset:current_project",
+    "current_project_sub_key": "{user_id}:{token}",
+}
 
 
 class AdhocMetricExpressionType(StrEnum):
@@ -661,7 +667,6 @@ def pessimistic_connection_handling(some_engine: Engine) -> None:
             connection.should_close_with_result = save_should_close_with_result
 
     if some_engine.dialect.name == "sqlite":
-
         @event.listens_for(some_engine, "connect")
         def set_sqlite_pragma(  # pylint: disable=unused-argument
             connection: sqlite3.Connection,
@@ -1285,6 +1290,44 @@ def get_user_email() -> str | None:
         return None
 
 
+def set_project(req: Request, project_id: int) -> bool:
+    try:
+        redis_config = current_app.config["PROJECT_REDIS_CONFIG"].copy()
+        _redis = redis.Redis(**redis_config, decode_responses=True)
+        sub_key = get_current_project_key(req)
+        if project_id is not None:
+            _redis.hset(REDIS_KEY["current_project"], sub_key, project_id)
+
+        return project_id
+    except Exception as e:
+        logging.info("An error occurred when set project: %s", exc_info=e)
+        return False
+
+
+def get_project_id(req: Request) -> int | None:
+    try:
+        redis_config = current_app.config["PROJECT_REDIS_CONFIG"].copy()
+        _redis = redis.Redis(**redis_config, decode_responses=True)
+        sub_key = get_current_project_key(req)
+        value = _redis.hget(REDIS_KEY["current_project"], sub_key)
+        if value is not None:
+            return int(value)
+        else:
+            return None
+    except Exception:
+        return None
+
+
+def get_current_project_key(req: Request) -> str:
+    token = req.cookies.get(
+        current_app.config["GLOBAL_ASYNC_QUERIES_JWT_COOKIE_NAME"])
+    if not token:
+        raise Exception("Token not preset")
+
+    return REDIS_KEY["current_project_sub_key"].format(user_id=get_user_id(),
+                                                       token=token)
+
+
 @contextmanager
 def override_user(user: User | None, force: bool = True) -> Iterator[Any]:
     """
@@ -1415,7 +1458,7 @@ def split(
         elif character == ")":
             parens -= 1
         elif character == quote:
-            if quotes and string[j - len(escaped_quote) + 1 : j + 1] != escaped_quote:
+            if quotes and string[j - len(escaped_quote) + 1: j + 1] != escaped_quote:
                 quotes = False
             elif not quotes:
                 quotes = True

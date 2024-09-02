@@ -79,11 +79,14 @@ from superset.constants import MODEL_API_RW_METHOD_PERMISSION_MAP, RouteMethod
 from superset.daos.chart import ChartDAO
 from superset.extensions import event_logger
 from superset.models.slice import Slice
+from superset.projects.models import ProjectCorrelationType
 from superset.tasks.thumbnails import cache_chart_thumbnail
 from superset.tasks.utils import get_current_user
 from superset.utils import json
+from superset.utils.core import get_project_id
 from superset.utils.screenshots import ChartScreenshot, DEFAULT_CHART_WINDOW_SIZE
 from superset.utils.urls import get_url_path
+from superset.views.base import ProjectFilter
 from superset.views.base_api import (
     BaseSupersetModelRestApi,
     RelatedFieldFilter,
@@ -231,6 +234,13 @@ class ChartRestApi(BaseSupersetModelRestApi):
     ]
     base_order = ("changed_on", "desc")
     base_filters = [["id", ChartFilter, lambda: []]]
+    if is_feature_enabled("USE_PROJECT"):
+        base_filters.append([
+            "project_id",
+            ProjectFilter,
+            {"request": request, "type": ProjectCorrelationType.SLICE}
+        ])
+
     search_filters = {
         "id": [
             ChartFavoriteFilter,
@@ -329,6 +339,7 @@ class ChartRestApi(BaseSupersetModelRestApi):
         except ValidationError as error:
             return self.response_400(message=error.messages)
         try:
+            item["project_id"] = get_project_id(request)
             new_model = CreateChartCommand(item).run()
             return self.response(201, id=new_model.id, result=item)
         except DashboardsForbiddenError as ex:
@@ -542,7 +553,7 @@ class ChartRestApi(BaseSupersetModelRestApi):
     @statsd_metrics
     @event_logger.log_this_with_context(
         action=lambda self, *args, **kwargs: f"{self.__class__.__name__}"
-        f".cache_screenshot",
+                                             f".cache_screenshot",
         log_to_statsd=False,
     )
     def cache_screenshot(self, pk: int, **kwargs: Any) -> WerkzeugResponse:
@@ -820,7 +831,7 @@ class ChartRestApi(BaseSupersetModelRestApi):
     @statsd_metrics
     @event_logger.log_this_with_context(
         action=lambda self, *args, **kwargs: f"{self.__class__.__name__}"
-        f".favorite_status",
+                                             f".favorite_status",
         log_to_statsd=False,
     )
     def favorite_status(self, **kwargs: Any) -> Response:
@@ -868,7 +879,7 @@ class ChartRestApi(BaseSupersetModelRestApi):
     @statsd_metrics
     @event_logger.log_this_with_context(
         action=lambda self, *args, **kwargs: f"{self.__class__.__name__}"
-        f".add_favorite",
+                                             f".add_favorite",
         log_to_statsd=False,
     )
     def add_favorite(self, pk: int) -> Response:
@@ -911,7 +922,7 @@ class ChartRestApi(BaseSupersetModelRestApi):
     @statsd_metrics
     @event_logger.log_this_with_context(
         action=lambda self, *args, **kwargs: f"{self.__class__.__name__}"
-        f".remove_favorite",
+                                             f".remove_favorite",
         log_to_statsd=False,
     )
     def remove_favorite(self, pk: int) -> Response:
@@ -954,7 +965,7 @@ class ChartRestApi(BaseSupersetModelRestApi):
     @statsd_metrics
     @event_logger.log_this_with_context(
         action=lambda self, *args, **kwargs: f"{self.__class__.__name__}"
-        f".warm_up_cache",
+                                             f".warm_up_cache",
         log_to_statsd=False,
     )
     def warm_up_cache(self) -> Response:

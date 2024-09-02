@@ -41,12 +41,20 @@ EXAMPLES_HOST = os.getenv("EXAMPLES_HOST")
 EXAMPLES_PORT = os.getenv("EXAMPLES_PORT")
 EXAMPLES_DB = os.getenv("EXAMPLES_DB")
 
+GLOBAL_ASYNC_QUERIES_JWT_SECRET = "ybT0MnlPEvTdJI2LQafnmzMzYTiaWpXk58bgmMG4coY"
 # The SQLAlchemy connection string.
+# SQLALCHEMY_DATABASE_URI = (
+#     f"{DATABASE_DIALECT}://"
+#     f"{DATABASE_USER}:{DATABASE_PASSWORD}@"
+#     f"{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_DB}"
+# )
+
 SQLALCHEMY_DATABASE_URI = (
-    f"{DATABASE_DIALECT}://"
-    f"{DATABASE_USER}:{DATABASE_PASSWORD}@"
-    f"{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_DB}"
+    "mysql://root:6987528@192.168.108.166/superset2?"
+    # "mysql://root:6987528@192.168.99.75/superset2?"
+    "charset=utf8mb4"
 )
+
 
 SQLALCHEMY_EXAMPLES_URI = (
     f"{DATABASE_DIALECT}://"
@@ -54,10 +62,13 @@ SQLALCHEMY_EXAMPLES_URI = (
     f"{EXAMPLES_HOST}:{EXAMPLES_PORT}/{EXAMPLES_DB}"
 )
 
+
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 REDIS_CELERY_DB = os.getenv("REDIS_CELERY_DB", "0")
 REDIS_RESULTS_DB = os.getenv("REDIS_RESULTS_DB", "1")
+REDIS_SYNC_DB = os.getenv("REDIS_SYNC_DB", "2")
+REDIS_PROJECT_DB = os.getenv("REDIS_PROJECT_DB", "3")
 
 RESULTS_BACKEND = FileSystemCache("/app/superset_home/sqllab")
 
@@ -70,6 +81,19 @@ CACHE_CONFIG = {
     "CACHE_REDIS_DB": REDIS_RESULTS_DB,
 }
 DATA_CACHE_CONFIG = CACHE_CONFIG
+
+GLOBAL_ASYNC_QUERIES_REDIS_CONFIG = {
+    "port": REDIS_PORT,
+    "host": REDIS_HOST,
+    "password": "",
+    "db": REDIS_SYNC_DB,
+    "ssl": False,
+}
+
+PROJECT_REDIS_CONFIG = {
+    **GLOBAL_ASYNC_QUERIES_REDIS_CONFIG,
+    "db": REDIS_PROJECT_DB,
+}
 
 
 class CeleryConfig:
@@ -97,7 +121,29 @@ class CeleryConfig:
 
 CELERY_CONFIG = CeleryConfig
 
-FEATURE_FLAGS = {"ALERT_REPORTS": True}
+FEATURE_FLAGS = {
+    "ALERT_REPORTS": True,
+    "DASHBOARD_RBAC": True,
+    "DRUID_JOINS": True,
+    "SCHEDULED_QUERIES": True,  # 计划查询
+    "THUMBNAILS": False,
+    "ENABLE_TEMPLATE_PROCESSING": True,  # 开启SQL模版
+    "ALLOW ADHOC SUBQUERY": True,
+    "CONFIRM_DASHBOARD_DIFF": True,
+    "DASHBOARD_VIRTUALIZATION": True,
+    "EMBEDDABLE_CHARTS": True,
+    "DRILL_BY": True,
+    "DRILL_TO_DETAIL": True,
+    "HORIZONTAL_FILTER_BAR": True,
+    "ENABLE_ADVANCED_DATA_TYPES": True,
+    "TAGGING_SYSTEM": False,  # 启用该功能后，所有者可以标记图表
+    "LISTVIEWS_DEFAULT_CARD_VIEW": True,  # 开启卡片显示
+    "CACHE_IMPERSONATION": True,
+    "CACHE_QUERY_BY_USER": True,
+    "GLOBAL_ASYNC_QUERIES": True,
+    "USE_PROJECT": True,
+}
+
 ALERT_REPORTS_NOTIFICATION_DRY_RUN = True
 WEBDRIVER_BASEURL = "http://superset:8088/"  # When using docker compose baseurl should be http://superset_app:8088/
 # The base URL for the email report hyperlinks.

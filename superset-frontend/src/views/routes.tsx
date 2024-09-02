@@ -17,7 +17,7 @@
  * under the License.
  */
 import { FeatureFlag, isFeatureEnabled } from '@superset-ui/core';
-import { lazy, ComponentType, ComponentProps } from 'react';
+import { ComponentProps, ComponentType, lazy } from 'react';
 
 // not lazy loaded since this is the home page.
 import Home from 'src/pages/Home';
@@ -31,14 +31,14 @@ const AnnotationLayerList = lazy(
   () =>
     import(
       /* webpackChunkName: "AnnotationLayerList" */ 'src/pages/AnnotationLayerList'
-    ),
+      ),
 );
 
 const AlertReportList = lazy(
   () =>
     import(
       /* webpackChunkName: "AlertReportList" */ 'src/pages/AlertReportList'
-    ),
+      ),
 );
 
 const AnnotationList = lazy(
@@ -54,7 +54,7 @@ const CssTemplateList = lazy(
   () =>
     import(
       /* webpackChunkName: "CssTemplateList" */ 'src/pages/CssTemplateList'
-    ),
+      ),
 );
 
 const DashboardList = lazy(
@@ -78,14 +78,14 @@ const DatasetCreation = lazy(
   () =>
     import(
       /* webpackChunkName: "DatasetCreation" */ 'src/pages/DatasetCreation'
-    ),
+      ),
 );
 
 const ExecutionLogList = lazy(
   () =>
     import(
       /* webpackChunkName: "ExecutionLogList" */ 'src/pages/ExecutionLogList'
-    ),
+      ),
 );
 
 const Chart = lazy(
@@ -96,7 +96,7 @@ const QueryHistoryList = lazy(
   () =>
     import(
       /* webpackChunkName: "QueryHistoryList" */ 'src/pages/QueryHistoryList'
-    ),
+      ),
 );
 
 const SavedQueryList = lazy(
@@ -120,7 +120,12 @@ const RowLevelSecurityList = lazy(
   () =>
     import(
       /* webpackChunkName: "RowLevelSecurityList" */ 'src/pages/RowLevelSecurityList'
-    ),
+      ),
+);
+
+const ProjectList = lazy(
+  () =>
+    import(/* webpackChunkName: "CssTemplateList" */ 'src/pages/ProjectList'),
 );
 
 type Routes = {
@@ -235,6 +240,13 @@ if (isFeatureEnabled(FeatureFlag.TaggingSystem)) {
   routes.push({
     path: '/superset/tags/',
     Component: Tags,
+  });
+}
+
+if (isFeatureEnabled(FeatureFlag.UseProject)) {
+  routes.push({
+    path: '/project/list',
+    Component: ProjectList,
   });
 }
 

@@ -59,6 +59,7 @@ export enum FeatureFlag {
   Thumbnails = 'THUMBNAILS',
   UseAnalagousColors = 'USE_ANALAGOUS_COLORS',
   ForceSqlLabRunAsync = 'SQLLAB_FORCE_RUN_ASYNC',
+  UseProject = 'USE_PROJECT',
 }
 
 export type ScheduleQueriesProps = {

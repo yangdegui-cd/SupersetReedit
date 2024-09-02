@@ -93,18 +93,21 @@ from superset.dashboards.schemas import (
 from superset.extensions import event_logger
 from superset.models.dashboard import Dashboard
 from superset.models.embedded_dashboard import EmbeddedDashboard
+from superset.projects.models import ProjectCorrelationType
 from superset.tasks.thumbnails import (
     cache_dashboard_screenshot,
     cache_dashboard_thumbnail,
 )
 from superset.tasks.utils import get_current_user
 from superset.utils import json
+from superset.utils.core import get_project_id
 from superset.utils.pdf import build_pdf_from_screenshots
 from superset.utils.screenshots import (
     DashboardScreenshot,
     DEFAULT_DASHBOARD_WINDOW_SIZE,
 )
 from superset.utils.urls import get_url_path
+from superset.views.base import ProjectFilter
 from superset.views.base_api import (
     BaseSupersetModelRestApi,
     RelatedFieldFilter,
@@ -267,6 +270,12 @@ class DashboardRestApi(BaseSupersetModelRestApi):
     base_filters = [
         ["id", DashboardAccessFilter, lambda: []],
     ]
+    if is_feature_enabled("USE_PROJECT"):
+        base_filters.append([
+            "project_id",
+            ProjectFilter,
+            {"request": request, "type": ProjectCorrelationType.DASHBOARD}
+        ])
 
     order_rel_fields = {
         "slices": ("slice_name", "asc"),
@@ -578,6 +587,7 @@ class DashboardRestApi(BaseSupersetModelRestApi):
         except ValidationError as error:
             return self.response_400(message=error.messages)
         try:
+            item["project_id"] = get_project_id(request)
             new_model = CreateDashboardCommand(item).run()
             return self.response(201, id=new_model.id, result=item)
         except DashboardInvalidError as ex:
@@ -650,6 +660,7 @@ class DashboardRestApi(BaseSupersetModelRestApi):
         except ValidationError as error:
             return self.response_400(message=error.messages)
         try:
+            item["project_id"] = get_project_id(request)
             changed_model = UpdateDashboardCommand(pk, item).run()
             last_modified_time = changed_model.changed_on.replace(
                 microsecond=0

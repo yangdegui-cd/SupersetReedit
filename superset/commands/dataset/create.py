@@ -31,8 +31,10 @@ from superset.commands.dataset.exceptions import (
     TableNotFoundValidationError,
 )
 from superset.daos.dataset import DatasetDAO
+from superset.daos.project_correlation import ProjectCorrelationDAO
 from superset.exceptions import SupersetSecurityException
 from superset.extensions import security_manager
+from superset.projects.models import ProjectCorrelationType
 from superset.sql_parse import Table
 from superset.utils.decorators import on_error, transaction
 
@@ -49,6 +51,11 @@ class CreateDatasetCommand(CreateMixin, BaseCommand):
 
         dataset = DatasetDAO.create(attributes=self._properties)
         dataset.fetch_metadata()
+        ProjectCorrelationDAO.create_correlation(
+            project_id=self._properties["project_id"],
+            object_id=dataset.id,
+            object_type=ProjectCorrelationType.DATASET,
+        )
         return dataset
 
     def validate(self) -> None:
@@ -59,6 +66,7 @@ class CreateDatasetCommand(CreateMixin, BaseCommand):
         table_name = self._properties["table_name"]
         sql = self._properties.get("sql")
         owner_ids: Optional[list[int]] = self._properties.get("owners")
+        project_id = self._properties.get("project_id", None)
 
         # Validate/Populate database
         database = DatasetDAO.get_database_by_id(database_id)
@@ -73,7 +81,7 @@ class CreateDatasetCommand(CreateMixin, BaseCommand):
 
             table = Table(table_name, schema, catalog)
 
-            if not DatasetDAO.validate_uniqueness(database, table):
+            if not DatasetDAO.validate_uniqueness(database, table, None, project_id):
                 exceptions.append(DatasetExistsValidationError(table))
 
         # Validate table exists on dataset if sql is not provided

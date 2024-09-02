@@ -23,12 +23,14 @@ from typing import Any
 import dateutil.parser
 from sqlalchemy.exc import SQLAlchemyError
 
+from superset import is_feature_enabled
 from superset.connectors.sqla.models import SqlaTable, SqlMetric, TableColumn
 from superset.daos.base import BaseDAO
 from superset.extensions import db
 from superset.models.core import Database
 from superset.models.dashboard import Dashboard
 from superset.models.slice import Slice
+from superset.projects.models import ProjectCorrelationObject, ProjectCorrelationType
 from superset.sql_parse import Table
 from superset.utils.core import DatasourceType
 from superset.views.base import DatasourceFilter
@@ -87,6 +89,7 @@ class DatasetDAO(BaseDAO[SqlaTable]):
         database: Database,
         table: Table,
         dataset_id: int | None = None,
+        project_id: int | None = None,
     ) -> bool:
         # The catalog might not be set even if the database supports catalogs, in case
         # multi-catalog is disabled.
@@ -103,13 +106,15 @@ class DatasetDAO(BaseDAO[SqlaTable]):
             # make sure the dataset found is different from the target (if any)
             dataset_query = dataset_query.filter(SqlaTable.id != dataset_id)
 
-        return not db.session.query(dataset_query.exists()).scalar()
+        dataset = dataset_query.one_or_none()
+        return DatasetDAO.validate_dataset_project_uniqueness(dataset, project_id)
 
     @staticmethod
     def validate_update_uniqueness(
         database: Database,
         table: Table,
         dataset_id: int,
+        project_id: int | None = None,
     ) -> bool:
         # The catalog might not be set even if the database supports catalogs, in case
         # multi-catalog is disabled.
@@ -122,7 +127,25 @@ class DatasetDAO(BaseDAO[SqlaTable]):
             SqlaTable.catalog == catalog,
             SqlaTable.id != dataset_id,
         )
-        return not db.session.query(dataset_query.exists()).scalar()
+        dataset = dataset_query.one_or_none()
+        return DatasetDAO.validate_dataset_project_uniqueness(dataset, project_id)
+
+    @staticmethod
+    def validate_dataset_project_uniqueness(
+        model: SqlaTable | None = None,
+        project_id: int | None = None,
+    ) -> bool:
+        if not model:
+            return True
+        elif is_feature_enabled("USE_PROJECT") is False or project_id is None:
+            return False
+        else:
+            correlation_query = db.session.query(ProjectCorrelationObject).filter(
+                ProjectCorrelationObject.project_id == project_id,
+                ProjectCorrelationObject.object_id == model.id,
+                ProjectCorrelationObject.object_type == ProjectCorrelationType.DATASET,
+            )
+            return not db.session.query(correlation_query.exists()).scalar()
 
     @staticmethod
     def validate_columns_exist(dataset_id: int, columns_ids: list[int]) -> bool:
