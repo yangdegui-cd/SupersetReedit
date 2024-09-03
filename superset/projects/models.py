@@ -64,6 +64,7 @@ class ProjectCorrelationType(enum.Enum):
     SLICE = "slice"
     DATASET = "dataset"
     USER = "user"
+    FOLDER = "folder"
 
 
 class ProjectCorrelationObject(Model):
