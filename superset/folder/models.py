@@ -35,9 +35,3 @@ class FolderDashboardCorrelation(Model):
     folder_id = Column(Integer, ForeignKey(Folder.id), primary_key=True)
     dashboard_id = Column(Integer, ForeignKey(Dashboard.id), primary_key=True)
     sort_order = Column(Integer, nullable=False, default=-1)
-
-    folder = relationship(Folder, backref='dashboards_correlation')
-    dashboard = relationship(
-        Dashboard,
-        backref=backref('folder_correlation', uselist=False)
-    )
