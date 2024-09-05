@@ -27,3 +27,18 @@ class ProjectCorrelationDAO(BaseDAO[ProjectCorrelationObject]):
             .filter(ProjectCorrelationObject.object_type == ProjectCorrelationType.USER)
             .all()
         )
+
+    @staticmethod
+    def get_objects_by_project(model, project_id):
+        if is_feature_enabled("USE_PROJECT") is False or project_id is None:
+            return db.session.query(model).all()
+        else:
+            return (
+                db.session.query(model)
+                .join(ProjectCorrelationObject)
+                .filter(ProjectCorrelationObject.object_id == model.id)
+                .filter(ProjectCorrelationObject.object_type == ProjectCorrelationType.from_model(model))
+                .filter(ProjectCorrelationObject.project_id == project_id)
+                .all()
+            )
+

@@ -21,7 +21,7 @@ class CreateFolderCommand:
         self.validate()
 
         folder = FolderDAO.create(attributes=self._properties)
-        db.flush()
+        db.session.flush()
         ProjectCorrelationDAO.create_correlation(
             project_id=self._properties["project_id"],
             object_id=folder.id,
@@ -30,7 +30,7 @@ class CreateFolderCommand:
         return folder
 
     def validate(self) -> None:
-        if is_feature_enabled("DASHBOARD_FOLDER"):
+        if is_feature_enabled("DASHBOARD_FOLDER") is False:
             raise ValidationError("Folder feature is not supported yet.")
 
 
