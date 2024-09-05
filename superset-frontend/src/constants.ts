@@ -111,6 +111,10 @@ export const URL_PARAMS = {
     name: 'focused_chart',
     type: 'number',
   },
+  edit: {
+    name: 'edit',
+    type: 'boolean',
+  },
 } as const;
 
 export const RESERVED_CHART_URL_PARAMS: string[] = [
