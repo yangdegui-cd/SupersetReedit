@@ -190,7 +190,7 @@ export const DEFAULT_CONFIG_FORM_LAYOUT: ColumnConfigFormLayout = {
       children: [
         [
           'columnWidth',
-          { name: 'horizontalAlign', override: { defaultValue: 'right' } },
+          { name: 'horizontalAlign', override: { defaultValue: 'center' } },
         ],
         ['showCellBars'],
         ['alignPositiveNegative'],
