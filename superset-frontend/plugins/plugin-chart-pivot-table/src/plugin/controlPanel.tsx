@@ -21,7 +21,6 @@ import {
   isAdhocColumn,
   isPhysicalColumn,
   QueryFormMetric,
-  SMART_DATE_ID,
   t,
   validateNonEmpty,
 } from '@superset-ui/core';
@@ -298,7 +297,7 @@ const config: ControlPanelConfig = {
               type: 'SelectControl',
               freeForm: true,
               label: t('Date format'),
-              default: SMART_DATE_ID,
+              default: '%Y-%m-%d %a',
               renderTrigger: true,
               choices: D3_TIME_FORMAT_OPTIONS,
               description: t('D3 time format for datetime columns'),
