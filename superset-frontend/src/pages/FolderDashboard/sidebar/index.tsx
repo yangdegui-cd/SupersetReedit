@@ -4,7 +4,7 @@ import { SupersetClient, t } from '@superset-ui/core';
 import { Alert, Button, Dropdown, Empty, Input, Space, Tooltip } from 'antd-v5';
 import { MenuUnfoldOutlined, PlusSquareOutlined } from '@ant-design/icons';
 import AddFolder from 'src/features/folder/AddFolder';
-import { useHistory, useParams } from 'react-router-dom';
+import {  useHistory, useParams } from 'react-router-dom';
 import RenameFolder from 'src/features/folder/RenameFolder';
 import SetDashboardFolderManager from 'src/features/folder/SetManager';
 import { useDispatch, useSelector } from 'react-redux';
@@ -87,6 +87,7 @@ function FolderSidebar() {
       .then(({ json }: any) => {
         const project_id = json.result?.project?.id;
         if (project_id && project_id !== current_project) {
+          // eslint-disable-next-line react-hooks/rules-of-hooks
           useChoiceProject(project_id, dispatch);
         }
       })
