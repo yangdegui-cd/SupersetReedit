@@ -21,6 +21,7 @@ import { format as d3Format } from 'd3-format';
 import NumberFormatter from '../NumberFormatter';
 import NumberFormats from '../NumberFormats';
 
+const integerFormatter = d3Format(`d`);
 const siFormatter = d3Format(`.3~s`);
 const float2PointFormatter = d3Format(`.2~f`);
 const float4PointFormatter = d3Format(`.4~f`);
@@ -30,19 +31,36 @@ function formatValue(value: number) {
     return '0';
   }
   const absoluteValue = Math.abs(value);
+  //  原始版本的代码
+  // if (absoluteValue >= 1000) {
+  //   // Normal human being are more familiar
+  //   // with billion (B) that giga (G)
+  //   return siFormatter(value).replace('G', 'B');
+  // }
+  // if (absoluteValue >= 1) {
+  //   return float2PointFormatter(value);
+  // }
+  // if (absoluteValue >= 0.001) {
+  //   return float4PointFormatter(value);
+  // }
+  // if (absoluteValue > 0.000001) {
+  //   return `${siFormatter(value * 1000000)}µ`;
+  // }
+  // return siFormatter(value);
+  if (absoluteValue >= 1000 && absoluteValue % 1 === 0) {
+    return integerFormatter(value);
+  }
   if (absoluteValue >= 1000) {
-    // Normal human being are more familiar
-    // with billion (B) that giga (G)
-    return siFormatter(value).replace('G', 'B');
+    return float2PointFormatter(value);
+  }
+  if (absoluteValue >= 1 && absoluteValue % 1 === 0) {
+    return integerFormatter(value);
   }
   if (absoluteValue >= 1) {
     return float2PointFormatter(value);
   }
   if (absoluteValue >= 0.001) {
     return float4PointFormatter(value);
-  }
-  if (absoluteValue > 0.000001) {
-    return `${siFormatter(value * 1000000)}µ`;
   }
   return siFormatter(value);
 }
