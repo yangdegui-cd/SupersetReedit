@@ -64,6 +64,21 @@ class ProjectCorrelationType(enum.Enum):
     SLICE = "slice"
     DATASET = "dataset"
     USER = "user"
+    FOLDER = "folder"
+
+    @staticmethod
+    def from_model(model):
+        if model.__name__ == "Dashboard":
+            return ProjectCorrelationType.DASHBOARD
+        if model.__name__ == "Slice":
+            return ProjectCorrelationType.SLICE
+        if model.__name__ == "SqlaTable":
+            return ProjectCorrelationType.DATASET
+        if model.__name__ == "User":
+            return ProjectCorrelationType.USER
+        if model.__name__ == "Folder":
+            return ProjectCorrelationType.FOLDER
+        raise ValueError(f"Unsupported model type: {model.__name__}")
 
 
 class ProjectCorrelationObject(Model):

@@ -1,0 +1,231 @@
+//paddingBottom: '40px';
+.dashboard-sider {
+  padding: 20px 5px;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+
+  &:hover {
+    .folder-item-label {
+      .item-label_icon {
+        opacity: 1;
+
+        &.add {
+          opacity: 0;
+        }
+      }
+    }
+  }
+}
+
+.folder-item-label, .dashboard-item-label {
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  display: flex;
+  padding: 5px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #333;
+  height: 40px;
+
+  .folder-item-label_wrapper {
+    display: flex;
+    align-items: center;
+  }
+
+  .item-label {
+    display: inline-block;
+    white-space: nowrap; /* 禁止换行 */
+    overflow: hidden; /* 隐藏超出范围的文本 */
+    text-overflow: ellipsis; /* 使用省略号代表被截断的文本 */
+  }
+
+  .item-label_icon {
+    display: inline-block;
+    width: 20px;
+
+    &.expand, &.add {
+      opacity: 0;
+    }
+
+    &.add {
+      display: inline-block;
+      padding: 4px;
+      border-radius: 4px;
+      box-shadow: initial;
+      height: 24px;
+      width: 24px;
+
+      svg {
+        font-size: 16px
+      }
+
+      &:hover {
+        background: #b9becf80;
+      }
+    }
+  }
+
+  &:hover {
+    background-color: #f1f1f1;
+
+    .item-label_icon.add {
+      opacity: 1 !important;
+    }
+  }
+}
+
+.folder-item-label, .folder-title,
+.ant-tree-icon__customize .anticon.anticon-folder-open,
+.ant-tree-icon__customize .anticon.anticon-folder {
+  color: #20a7c9;
+  font-weight: bolder;
+}
+
+.dashboard-item.active {
+  .dashboard-item-label {
+    background: #EAEEFD;
+    color: #20a7c9;
+    font-weight: bolder;
+
+    .item-label_icon {
+      color: #20a7c9;
+      fill: #20a7c9
+    }
+  }
+}
+
+.folder-item-children {
+  height: 0px;
+  overflow: hidden;
+
+  &.expand {
+    height: auto;
+    display: block;
+  }
+
+  transition: height .5s ease-in;
+}
+
+.ant-cascader-menu-item {
+  min-width: 150px;
+}
+
+.dashboard-sider-header {
+  display: inline-flex;
+  justify-content: space-between;
+  height: 32px;
+  width: 100%;
+
+  div:last-child {
+    width: 150px;
+    display: inline-flex;
+    justify-content: flex-end;
+  }
+}
+
+.dashboard-sider-menus {
+  margin-top: 10px;
+  height: calc(100% - 42px);
+  overflow-y: auto;
+}
+
+.folder-item {
+  background: transparent;
+
+  &:hover {
+    background: #F6F6F9;
+  }
+}
+
+.custom-directory-tree > .ant-tree-node-content-wrapper {
+  color: #20a7c9;
+}
+
+.text {
+  font-weight: bold;
+  text-align: center;
+  color: #05c5ee;
+}
+th.retention-table-call{
+  text-align: center !important;
+  font-weight: bold !important;
+}
+
+td.retention-table-call {
+  min-width: 128px;
+  height: 36px;
+  font-size: 12px !important;
+  padding: 0px !important;
+  text-align: center !important;
+  &.dimension {
+    padding: 0 10px !important;
+    text-align: left !important;
+  }
+  &.period{
+    text-align: right !important;
+  }
+}
+
+td.retention-table-call div {
+  display: inline-block;
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  line-height: 34px;
+
+  p {
+    margin: 0;
+    padding: 0;
+    height: 17px;
+    line-height: 17px;
+  }
+
+  p:last-child {
+    font-size: 11px;
+  }
+}
+
+
+.MackLineItem{
+
+}
+.AddMackLineItem{
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 24px;
+  padding-left: 4px;
+  font-size: 12px;
+  color: rgb(178, 178, 178);
+  border: 1px dashed rgb(224, 224, 224);
+  border-radius: 4px;
+  cursor: pointer;
+  :hover{
+    background: #F7F7F7;
+  }
+}
+
+.MarkLineItem{
+  display: flex;
+  -webkit-box-align: center;
+  align-items: center;
+  width: 100%;
+  font-size: 12px;
+  height: 24px;
+  background-color: rgb(240, 240, 240);
+  border-radius: 3px;
+  cursor: pointer;
+  color: #000000d9;
+  justify-content: space-between;
+  .icon{
+    height: 100%;
+    line-height: 24px;
+    font-size: 15px;
+    color: rgb(178, 178, 178);
+    width: 24px;
+    border-right: 1px solid rgba(0, 0, 0, 0.047);
+    cursor: pointer;
+  }
+}
