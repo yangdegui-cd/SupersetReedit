@@ -28,6 +28,11 @@ from flask_caching.backends.filesystemcache import FileSystemCache
 
 logger = logging.getLogger()
 
+BABEL_DEFAULT_LOCALE = "zh"
+LANGUAGES = {
+    'zh': {'flag': 'cn', 'name': 'Chinese'}
+}
+
 DATABASE_DIALECT = os.getenv("DATABASE_DIALECT")
 DATABASE_USER = os.getenv("DATABASE_USER")
 DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
@@ -51,7 +56,7 @@ GLOBAL_ASYNC_QUERIES_JWT_SECRET = "ybT0MnlPEvTdJI2LQafnmzMzYTiaWpXk58bgmMG4coY"
 
 SQLALCHEMY_DATABASE_URI = (
     "mysql://root:6987528@192.168.108.166/superset2?"
-    # "mysql://root:6987528@192.168.99.75/superset2?"
+    # "mysql://root:6987528@192.168.99.74/superset2?"
     "charset=utf8mb4"
 )
 
