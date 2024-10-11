@@ -4,7 +4,7 @@ import { SupersetClient, t } from '@superset-ui/core';
 import { Alert, Button, Dropdown, Empty, Input, Space, Tooltip } from 'antd-v5';
 import { MenuUnfoldOutlined, PlusSquareOutlined } from '@ant-design/icons';
 import AddFolder from 'src/features/folder/AddFolder';
-import {  useHistory, useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import RenameFolder from 'src/features/folder/RenameFolder';
 import SetDashboardFolderManager from 'src/features/folder/SetManager';
 import { useDispatch, useSelector } from 'react-redux';
@@ -46,6 +46,7 @@ function FolderSidebar() {
   );
   const { idOrSlug } = useParams<{ idOrSlug: string }>();
   const [dashboards, setDashboards] = useState<DashboardInFolder[]>([]);
+  const [folders, setFolders] = useState<DashboardFolder[]>([]);
   const [openAddModel, setOpenAddModel] = useState(false);
   const [openFolderManage, setOpenFolderManage] = useState(false);
   const [addFolderParentId, setAddFolderParentId] = useState<
@@ -74,7 +75,8 @@ function FolderSidebar() {
       endpoint: '/api/v1/folder/get_list',
     })
       .then(({ json }: any) => {
-        setDashboards(json.result ?? []);
+        setDashboards(json.result.dashboards ?? []);
+        setFolders(json.result.folders ?? []);
       })
       .finally(() => setLoading(false));
   };
@@ -95,8 +97,8 @@ function FolderSidebar() {
   };
 
   const rootTree: FolderRootTree = useMemo(
-    () => convertDashboardsToTree(dashboards, filterString),
-    [dashboards, filterString],
+    () => convertDashboardsToTree(dashboards, folders, filterString),
+    [dashboards, folders, filterString],
   );
 
   useEffect(() => {
@@ -136,6 +138,7 @@ function FolderSidebar() {
     setFolderToSetManager(data);
 
   const handleRenameFolder = (new_name: string) => {
+    // eslint-disable-next-line no-unused-expressions
     folderToRename &&
       apiRenameFolder(folderToRename, new_name)
         .then(
@@ -152,6 +155,7 @@ function FolderSidebar() {
         .finally(() => setFolderToRename(undefined));
   };
   const handleDeleteFolder = () => {
+    // eslint-disable-next-line no-unused-expressions
     folderToDelete &&
       apiDeleteFolder(folderToDelete)
         .then(

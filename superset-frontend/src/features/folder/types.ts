@@ -16,33 +16,44 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-// Index .less, any imports here will be included in the final css build
 
-@import '~bootstrap/less/bootstrap.less';
-@import './fonts.less';
-@import './variables.less';
-@import './cosmo/bootswatch.less';
-@import './dashboard-folder.less';
-
-html,
-body {
-  font-size: @font-size-base;
-  line-height: @line-height-base;
+export interface DashboardInFolder {
+  dashboard_title: string;
+  id: number;
+  published: boolean;
+  slug?: string | null;
+  url: string;
+  status: string;
+  folder?: DashboardFolder | null;
+  sort_order: number;
+}
+export interface DashboardFolder {
+  id?: number;
+  name: string;
+  sort_order: number;
+  parent_folder_id?: number | null;
+  parent?: DashboardFolder | null;
 }
 
-body {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+export interface DashboardInTree {
+  dashboard_title: string;
+  id: number;
+  published: boolean;
+  slug: string | null;
+  sort_order: number;
+  status: string;
+  url: string;
 }
 
-header {
-  flex: 0 1 auto;
+export interface FolderInTree {
+  id: number;
+  name: string;
+  sort_order: number;
+  children: FolderInTree[];
+  dashboards: DashboardInTree[];
 }
 
-#app {
-  flex: 1 1 auto;
-  position: relative;
-  display: flex;
-  flex-direction: column;
+export interface FolderRootTree {
+  children: FolderInTree[];
+  dashboards: DashboardInTree[];
 }

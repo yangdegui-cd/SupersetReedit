@@ -81,6 +81,13 @@ const DatasetCreation = lazy(
       ),
 );
 
+const FolderDashboard = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "ExecutionLogList" */ 'src/pages/FolderDashboard'
+      ),
+);
+
 const ExecutionLogList = lazy(
   () =>
     import(
@@ -136,18 +143,6 @@ type Routes = {
 }[];
 
 export const routes: Routes = [
-  {
-    path: '/superset/welcome/',
-    Component: Home,
-  },
-  {
-    path: '/dashboard/list/',
-    Component: DashboardList,
-  },
-  {
-    path: '/superset/dashboard/:idOrSlug/',
-    Component: Dashboard,
-  },
   {
     path: '/chart/add',
     Component: ChartCreation,
@@ -231,6 +226,36 @@ export const routes: Routes = [
     Component: SqlLab,
   },
 ];
+
+if (isFeatureEnabled(FeatureFlag.DashboardFolder)) {
+  console.log('isFeatureEnabled(FeatureFlag.DashboardFolder)');
+  routes.push({
+    path: '/superset/welcome/',
+    Component: FolderDashboard,
+  });
+  routes.push({
+    path: '/dashboard/list/',
+    Component: FolderDashboard,
+  });
+  routes.push({
+    path: '/superset/dashboard/:idOrSlug/',
+    Component: FolderDashboard,
+  });
+} else {
+  console.log('!isFeatureEnabled(FeatureFlag.DashboardFolder)');
+  routes.push({
+    path: '/superset/welcome/',
+    Component: Home,
+  });
+  routes.push({
+    path: '/dashboard/list/',
+    Component: DashboardList,
+  });
+  routes.push({
+    path: '/superset/dashboard/:idOrSlug/',
+    Component: Dashboard,
+  });
+}
 
 if (isFeatureEnabled(FeatureFlag.TaggingSystem)) {
   routes.push({
