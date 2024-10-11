@@ -202,3 +202,7 @@ class DatasetForbiddenDataURI(ImportFailedError):
 class WarmUpCacheTableNotFoundError(CommandException):
     status = 404
     message = _("The provided table was not found in the provided database")
+
+
+class FolderCreateFailedError(CreateFailedError):
+    message = _("Folder could not be created.")

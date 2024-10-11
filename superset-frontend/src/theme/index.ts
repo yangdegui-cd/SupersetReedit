@@ -32,7 +32,7 @@ const themes = {
 const baseConfig: ThemeConfig = {
   token: {
     borderRadius: supersetTheme.borderRadius,
-    colorBgBase: supersetTheme.colors.primary.light4,
+    colorBgBase: supersetTheme.colors.grayscale.light5,
     colorError: supersetTheme.colors.error.base,
     colorInfo: supersetTheme.colors.info.base,
     colorLink: supersetTheme.colors.grayscale.dark1,
@@ -71,7 +71,7 @@ const baseConfig: ThemeConfig = {
     },
     Slider: {
       trackBgDisabled: supersetTheme.colors.grayscale.light1,
-      colorBgElevated: supersetTheme.colors.grayscale.light5,
+      // colorBgElevated: supersetTheme.colors.grayscale.light5,
       handleSizeHover: 10,
       handleLineWidthHover: 2,
     },

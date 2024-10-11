@@ -24,6 +24,7 @@ export function searchStrIncludes(
   matchCase = false,
   matchPinyin = true,
 ): boolean {
+  if (searchStr?.length === 0) return true;
   if (!str || !searchStr) return false;
   if (!matchCase) {
     // eslint-disable-next-line no-param-reassign
@@ -35,7 +36,7 @@ export function searchStrIncludes(
   if (matchPinyin) {
     const strPinyin = toPinyin(str);
     if (strPinyin.includes(searchStr)) return true;
-    const strPinyinAcronym = toPinyinAcronym(searchStr);
+    const strPinyinAcronym = toPinyinAcronym(str);
     if (strPinyinAcronym.includes(searchStr)) return true;
   }
   return false;

@@ -24,7 +24,6 @@ import {
   isPhysicalColumn,
   QueryFormColumn,
   QueryMode,
-  SMART_DATE_ID,
   t,
 } from '@superset-ui/core';
 import {
@@ -405,7 +404,7 @@ const config: ControlPanelConfig = {
               type: 'SelectControl',
               freeForm: true,
               label: t('Timestamp format'),
-              default: SMART_DATE_ID,
+              default: '%Y-%m-%d %a',
               renderTrigger: true,
               clearable: false,
               choices: D3_TIME_FORMAT_OPTIONS,

@@ -20,18 +20,11 @@
 import moment from 'moment';
 import { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import {
-  styled,
-  css,
-  isFeatureEnabled,
-  FeatureFlag,
-  t,
-  getExtensionsRegistry,
-} from '@superset-ui/core';
+import { css, FeatureFlag, getExtensionsRegistry, isFeatureEnabled, styled, t } from '@superset-ui/core';
 import { Global } from '@emotion/react';
 import {
-  LOG_ACTIONS_PERIODIC_RENDER_DASHBOARD,
   LOG_ACTIONS_FORCE_REFRESH_DASHBOARD,
+  LOG_ACTIONS_PERIODIC_RENDER_DASHBOARD,
   LOG_ACTIONS_TOGGLE_EDIT_DASHBOARD,
 } from 'src/logger/LogUtils';
 import Icons from 'src/components/Icons';
@@ -45,14 +38,8 @@ import UndoRedoKeyListeners from 'src/dashboard/components/UndoRedoKeyListeners'
 import PropertiesModal from 'src/dashboard/components/PropertiesModal';
 import { chartPropShape } from 'src/dashboard/util/propShapes';
 import getOwnerName from 'src/utils/getOwnerName';
-import {
-  UNDO_LIMIT,
-  SAVE_TYPE_OVERWRITE,
-  DASHBOARD_POSITION_DATA_LIMIT,
-} from 'src/dashboard/util/constants';
-import setPeriodicRunner, {
-  stopPeriodicRender,
-} from 'src/dashboard/util/setPeriodicRunner';
+import { DASHBOARD_POSITION_DATA_LIMIT, SAVE_TYPE_OVERWRITE, UNDO_LIMIT } from 'src/dashboard/util/constants';
+import setPeriodicRunner, { stopPeriodicRender } from 'src/dashboard/util/setPeriodicRunner';
 import { PageHeaderWithActions } from 'src/components/PageHeaderWithActions';
 import MetadataBar, { MetadataType } from 'src/components/MetadataBar';
 import DashboardEmbedModal from '../EmbeddedModal';
@@ -140,6 +127,7 @@ const actionButtonsStyle = theme => css`
 const StyledUndoRedoButton = styled(Button)`
   // TODO: check if we need this.
   padding: 0;
+
   &:hover {
     background: transparent;
   }
@@ -147,6 +135,7 @@ const StyledUndoRedoButton = styled(Button)`
 
 const undoRedoStyle = theme => css`
   color: ${theme.colors.grayscale.light1};
+
   &:hover {
     color: ${theme.colors.grayscale.base};
   }
@@ -643,6 +632,20 @@ class Header extends PureComponent {
                 />
               ) : (
                 <div css={actionButtonsStyle}>
+                  <div>
+                    <Button
+                      buttonStyle="secondary"
+                      style={{ marginRight: 8 }}
+                      disabled={isLoading}
+                      onClick={this.forceRefresh}
+                      data-test="force-refres-button"
+                      className="action-button"
+                      css={editButtonStyle}
+                      aria-label="强制刷新"
+                    >
+                      强制刷新
+                    </Button>
+                  </div>
                   {NavExtension && <NavExtension />}
                   {userCanEdit && (
                     <Button
