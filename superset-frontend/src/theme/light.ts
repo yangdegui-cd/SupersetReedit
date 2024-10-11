@@ -30,11 +30,11 @@ export const lightAlgorithm: MappingAlgorithm = seedToken => {
     borderRadiusSM: supersetTheme.borderRadius,
     borderRadiusXS: supersetTheme.borderRadius,
 
-    colorBgContainer: supersetTheme.colors.primary.light4,
-    colorBgElevated: supersetTheme.colors.primary.base,
-    colorBgLayout: supersetTheme.colors.grayscale.light4,
-    colorBgMask: supersetTheme.colors.grayscale.light2,
-    colorBgSpotlight: supersetTheme.colors.grayscale.dark1,
+    // colorBgContainer: supersetTheme.colors.primary.light4,
+    // colorBgElevated: supersetTheme.colors.primary.base,
+    // colorBgLayout: supersetTheme.colors.grayscale.light4,
+    // colorBgMask: supersetTheme.colors.grayscale.light2,
+    // colorBgSpotlight: supersetTheme.colors.grayscale.dark1,
 
     colorBorder: supersetTheme.colors.grayscale.light2,
     colorBorderSecondary: supersetTheme.colors.grayscale.light3,
