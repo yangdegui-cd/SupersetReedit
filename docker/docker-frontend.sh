@@ -28,7 +28,7 @@ if [ "$BUILD_SUPERSET_FRONTEND_IN_DOCKER" = "true" ]; then
     cd /app/superset-frontend
 
     echo "Running `npm install`"
-    npm install
+#    npm install
 
     echo "Running frontend"
     npm run dev
