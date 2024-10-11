@@ -23,3 +23,9 @@ class FolderPostSchema(Schema):
     name = fields.String(required=True, validate=Length(1, 255))
     parent_folder_id = fields.Integer(required=False)
 
+
+class FolderSaveSortSchema(Schema):
+    key = fields.Str()
+    title = fields.Str()
+    children = fields.List(fields.Nested(lambda: FolderSaveSortSchema()))
+    isLeaf = fields.Bool()
