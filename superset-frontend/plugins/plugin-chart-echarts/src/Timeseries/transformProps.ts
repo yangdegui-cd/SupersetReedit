@@ -50,6 +50,7 @@ import {
 import type { EChartsCoreOption } from 'echarts/core';
 import type { LineStyleOption } from 'echarts/types/src/util/types';
 import type { SeriesOption } from 'echarts';
+import { ZRLineType } from 'echarts/types/src/util/types';
 import {
   EchartsTimeseriesChartProps,
   EchartsTimeseriesFormData,
@@ -98,6 +99,7 @@ import {
   TIMESERIES_CONSTANTS,
 } from '../constants';
 import { getDefaultTooltip } from '../utils/tooltip';
+import computeAuxiliaryData from './auxiliariesData';
 import {
   getPercentFormatter,
   getTooltipTimeFormatter,
@@ -186,6 +188,7 @@ export default function transformProps(
     yAxisTitleMargin,
     yAxisTitlePosition,
     zoomable,
+    auxiliaries,
   }: EchartsTimeseriesFormData = { ...DEFAULT_FORM_DATA, ...formData };
   const refs: Refs = {};
   const groupBy = ensureIsArray(groupby);
@@ -468,7 +471,8 @@ export default function transformProps(
         ForecastSeriesEnum.Observation,
     )
     .map(entry => entry.name || '')
-    .concat(extractAnnotationLabels(annotationLayers, annotationData));
+    .concat(extractAnnotationLabels(annotationLayers, annotationData))
+    .concat(auxiliaries?.map(auxiliarie => auxiliarie.name) ?? []);
 
   let xAxis: any = {
     type: xAxisType,
@@ -520,6 +524,41 @@ export default function transformProps(
     [xAxis, yAxis] = [yAxis, xAxis];
     [padding.bottom, padding.left] = [padding.left, padding.bottom];
   }
+
+  const dedup_series = dedupSeries(series);
+  const dedup_series_data = dedup_series.map(s => s.data);
+
+  auxiliaries?.forEach(auxiliary => {
+    dedup_series.push({
+      areaStyle: undefined,
+      smooth: false,
+      id: auxiliary.name,
+      name: auxiliary.name,
+      type: 'line',
+      label: {
+        show: false,
+        position: 'top',
+      },
+      itemStyle: {
+        color: auxiliary.color,
+        opacity: 1,
+      },
+      lineStyle: {
+        opacity: 1,
+        type: auxiliary.lineType as ZRLineType,
+        color: auxiliary.color,
+        width: auxiliary.width,
+      },
+      symbolSize: 3,
+      yAxisIndex: 0,
+      triggerLineEvent: true,
+      stack: undefined,
+      data: computeAuxiliaryData(
+        dedup_series_data as [string | number, number][][],
+        auxiliary.aggType,
+      ),
+    });
+  });
 
   const echartOptions: EChartsCoreOption = {
     useUTC: true,
@@ -609,7 +648,7 @@ export default function transformProps(
       ),
       data: legendData as string[],
     },
-    series: dedupSeries(series),
+    series: dedup_series,
     toolbox: {
       show: zoomable,
       top: TIMESERIES_CONSTANTS.toolboxTop,

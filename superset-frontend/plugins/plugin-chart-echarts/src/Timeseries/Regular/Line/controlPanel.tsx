@@ -67,6 +67,21 @@ const config: ControlPanelConfig = {
       label: t('Chart Options'),
       expanded: true,
       controlSetRows: [
+        [
+          {
+            name: 'auxiliaries',
+            config: {
+              type: 'LineChartAuxiliaryControl',
+              label: t('辅助线设置'),
+              renderTrigger: true,
+              default: [],
+              description: t(
+                '辅助线是在已有数据基础上, 根据x轴每个节点的多个图例(lgin)的值做统计计算结果. ' +
+                  '可以根据统计方法不同设置多条辅助线',
+              ),
+            },
+          },
+        ],
         ...seriesOrderSection,
         ['color_scheme'],
         [

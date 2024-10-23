@@ -21,6 +21,7 @@ import {
   AnnotationLayer,
   AxisType,
   ContributionType,
+  LineChartAuxiliaryItem,
   QueryFormData,
   QueryFormMetric,
   TimeFormatter,
@@ -91,6 +92,7 @@ export type EchartsTimeseriesFormData = QueryFormData & {
   showExtraControls: boolean;
   percentageThreshold: number;
   orientation?: OrientationType;
+  auxiliaries?: LineChartAuxiliaryItem[];
 } & LegendFormData &
   TitleFormData;
 

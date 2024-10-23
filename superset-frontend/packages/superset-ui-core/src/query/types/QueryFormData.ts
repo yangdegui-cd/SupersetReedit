@@ -35,6 +35,14 @@ import { TimeGranularity } from '../../time-format';
 import { JsonObject } from '../../connection';
 import { AdhocColumn, PhysicalColumn } from './Column';
 
+export type MarkLineItem = {
+  name?: string;
+  aggType: 'average' | 'min' | 'max' | 'median';
+  lineType: 'dashed' | 'solid' | 'dotted';
+  width: number;
+  color: string;
+  dataIndex: number;
+};
 /**
  * Metric definition/reference in query object.
  */
@@ -187,6 +195,7 @@ export interface BaseFormData extends TimeRange, FormDataResidual {
   series_columns?: QueryFormColumn[];
   series_limit?: number;
   series_limit_metric?: QueryFormMetric;
+  markLines?: MarkLineItem[];
 }
 
 /**
