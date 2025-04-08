@@ -31,6 +31,7 @@ from flask_babel import gettext, ngettext
 from marshmallow import ValidationError
 from werkzeug.wrappers import Response as WerkzeugResponse
 from werkzeug.wsgi import FileWrapper
+from superset.models.dashboard import DashboardAccessLogs
 
 from superset import db, is_feature_enabled, thumbnail_cache
 from superset.charts.schemas import ChartEntityResponseSchema
@@ -100,7 +101,7 @@ from superset.tasks.thumbnails import (
 )
 from superset.tasks.utils import get_current_user
 from superset.utils import json
-from superset.utils.core import get_project_id
+from superset.utils.core import get_project_id, get_user_id
 from superset.utils.pdf import build_pdf_from_screenshots
 from superset.utils.screenshots import (
     DashboardScreenshot,
@@ -367,6 +368,17 @@ class DashboardRestApi(BaseSupersetModelRestApi):
             404:
               $ref: '#/components/responses/404'
         """
+        logger.info("Getting dashboard %s", dash.project)
+
+        if dash.project is not None:
+            db.session.add(DashboardAccessLogs(dashboard_id=dash.id,
+                                               dashboard_name=dash.dashboard_title,
+                                               project_name=dash.project.project_name,
+                                               user_id=get_user_id(),
+                                               time=datetime.now().strftime(
+                                                   "%Y-%m-%d %H:%M:%S")))
+            db.session.flush()
+
         result = self.dashboard_get_response_schema.dump(dash)
         add_extra_log_payload(
             dashboard_id=dash.id, action=f"{self.__class__.__name__}.get"
@@ -981,7 +993,7 @@ class DashboardRestApi(BaseSupersetModelRestApi):
     @statsd_metrics
     @event_logger.log_this_with_context(
         action=lambda self, *args, **kwargs: f"{self.__class__.__name__}"
-        f".cache_dashboard_screenshot",
+                                             f".cache_dashboard_screenshot",
         log_to_statsd=False,
     )
     def cache_dashboard_screenshot(self, pk: int, **kwargs: Any) -> WerkzeugResponse:
@@ -1145,7 +1157,7 @@ class DashboardRestApi(BaseSupersetModelRestApi):
     @rison(get_fav_star_ids_schema)
     @event_logger.log_this_with_context(
         action=lambda self, *args, **kwargs: f"{self.__class__.__name__}"
-        f".favorite_status",
+                                             f".favorite_status",
         log_to_statsd=False,
     )
     def favorite_status(self, **kwargs: Any) -> Response:
@@ -1194,7 +1206,7 @@ class DashboardRestApi(BaseSupersetModelRestApi):
     @statsd_metrics
     @event_logger.log_this_with_context(
         action=lambda self, *args, **kwargs: f"{self.__class__.__name__}"
-        f".add_favorite",
+                                             f".add_favorite",
         log_to_statsd=False,
     )
     def add_favorite(self, pk: int) -> Response:
@@ -1237,7 +1249,7 @@ class DashboardRestApi(BaseSupersetModelRestApi):
     @statsd_metrics
     @event_logger.log_this_with_context(
         action=lambda self, *args, **kwargs: f"{self.__class__.__name__}"
-        f".remove_favorite",
+                                             f".remove_favorite",
         log_to_statsd=False,
     )
     def remove_favorite(self, pk: int) -> Response:
@@ -1387,7 +1399,7 @@ class DashboardRestApi(BaseSupersetModelRestApi):
             if "ssh_tunnel_private_key_passwords" in request.form
             else None
         )
-
+        contents["project_id"] = get_project_id(request)
         command = ImportDashboardsCommand(
             contents,
             passwords=passwords,
@@ -1532,8 +1544,8 @@ class DashboardRestApi(BaseSupersetModelRestApi):
     @statsd_metrics
     @event_logger.log_this_with_context(
         action=lambda self,
-        *args,
-        **kwargs: f"{self.__class__.__name__}.delete_embedded",
+                      *args,
+                      **kwargs: f"{self.__class__.__name__}.delete_embedded",
         log_to_statsd=False,
     )
     @with_dashboard
