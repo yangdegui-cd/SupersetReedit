@@ -294,7 +294,7 @@ def menu_data(user: User) -> dict[str, Any]:
             ),
             "user_logout_url": appbuilder.get_url_for_logout,
             "user_login_url": appbuilder.get_url_for_login,
-            "locale": session.get("locale", "en"),
+            "locale": session.get("locale", "zh"),
         },
     }
 
@@ -329,7 +329,7 @@ def cached_common_bootstrap_data(  # pylint: disable=unused-argument
     # verify client has google sheets installed
     available_specs = get_available_engine_specs()
     frontend_config["HAS_GSHEETS_INSTALLED"] = bool(available_specs[GSheetsEngineSpec])
-
+    locale.language = "zh"
     language = locale.language if locale else "en"
 
     bootstrap_data = {
