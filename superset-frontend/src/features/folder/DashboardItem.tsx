@@ -61,6 +61,8 @@ export default function DashboardItem({
           return handleEditDashboard(data);
         case 'delete_dashboard':
           return handleDeleteDashboard(data);
+        default:
+          return null;
       }
     },
   };
