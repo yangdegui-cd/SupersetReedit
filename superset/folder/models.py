@@ -1,9 +1,16 @@
 from flask_appbuilder import Model
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship, backref
 
+from superset import security_manager
 from superset.models.dashboard import Dashboard
 
+ab_user_folder_table = Table(
+    'ab_user_folder',
+    Model.metadata,
+    Column("folder_id", Integer, ForeignKey("folder.id")),
+    Column("user_id", Integer, ForeignKey("ab_user.id"))
+)
 
 class Folder(Model):
     __tablename__ = 'folder'
@@ -27,6 +34,11 @@ class Folder(Model):
         secondary='folder_dashboard_correlation',
         backref=backref('folder', uselist=False),
         order_by="FolderDashboardCorrelation.sort_order"
+    )
+
+    users = relationship(
+        security_manager.user_model,
+        secondary=ab_user_folder_table,
     )
 
 

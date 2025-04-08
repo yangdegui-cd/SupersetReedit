@@ -24,6 +24,7 @@ from sqlalchemy.orm.query import Query
 
 from superset import db, is_feature_enabled, security_manager
 from superset.connectors.sqla.models import SqlaTable
+from superset.folder.models import Folder
 from superset.models.core import Database
 from superset.models.dashboard import Dashboard, is_uuid
 from superset.models.embedded_dashboard import EmbeddedDashboard
@@ -139,10 +140,18 @@ class DashboardAccessFilter(BaseFilter):  # pylint: disable=too-few-public-metho
             )
         )
 
+
         owner_ids_query = (
             db.session.query(Dashboard.id)
             .join(Dashboard.owners)
             .filter(security_manager.user_model.id == get_user_id())
+        )
+
+        folder_ids_query = (
+            db.session.query(Dashboard.id)
+            .join(Dashboard.folder)
+            .join(Folder.users)
+            .filter(Folder.users.any(id=get_user_id()))
         )
 
         feature_flagged_filters = []
@@ -186,6 +195,7 @@ class DashboardAccessFilter(BaseFilter):  # pylint: disable=too-few-public-metho
             or_(
                 Dashboard.id.in_(owner_ids_query),
                 Dashboard.id.in_(datasource_perm_query),
+                Dashboard.id.in_(folder_ids_query),
                 *feature_flagged_filters,
             )
         )

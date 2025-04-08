@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-syntax
 import React, { useState } from 'react';
 import {
   CaretDownOutlined,
@@ -46,9 +47,13 @@ function FolderItem({
   const source = 'Folder';
   const [expand, setExpand] = useState(true);
 
+  // eslint-disable-next-line no-underscore-dangle
   const _handleAddSubFolder = () => handleAddSubFolder(data);
+  // eslint-disable-next-line no-underscore-dangle
   const _handleDeleteFolder = () => handleDeleteFolder(data);
+  // eslint-disable-next-line no-underscore-dangle
   const _handelRenameFolder = () => handelRenameFolder(data);
+  // eslint-disable-next-line no-underscore-dangle
   const _handleSetManagerClick = () => handleSetManagerClick(data);
 
   const dropdownMenu = {
@@ -74,6 +79,7 @@ function FolderItem({
         icon: <UserSwitchOutlined />,
       },
     ],
+    // eslint-disable-next-line consistent-return
     onClick: ({ key }: { key: string }) => {
       switch (key) {
         case 'add sub folder':
@@ -84,6 +90,7 @@ function FolderItem({
           return _handleDeleteFolder();
         case 'set manager':
           return _handleSetManagerClick();
+        default:
       }
     },
   };
@@ -94,16 +101,12 @@ function FolderItem({
         style={{ paddingLeft: `${index * indent + padding_left}px` }}
       >
         <div className="folder-item-label_wrapper">
-          <span
-            className="item-label_icon expand"
-            onClick={() => setExpand(!expand)}
-          >
-            {expand ? <CaretDownOutlined /> : <CaretRightOutlined />}
-          </span>
+          {expand ? <CaretDownOutlined /> : <CaretRightOutlined />}
           <span className="item-label_icon folder">
             {expand ? <FolderOpenOutlined /> : <FolderOutlined />}
           </span>
           <Tooltip title={data.name}>
+            {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
             <span
               onClick={() => setExpand(!expand)}
               className="item-label"

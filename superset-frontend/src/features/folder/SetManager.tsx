@@ -1,6 +1,7 @@
 import { Input, Modal } from 'antd';
 import { SupersetClient, t } from '@superset-ui/core';
 import Form from 'antd/lib/form';
+// eslint-disable-next-line no-restricted-syntax
 import React, { useEffect, useState } from 'react';
 import Select from 'antd/lib/select';
 import { useSelector } from 'react-redux';
@@ -51,7 +52,7 @@ export default function SetDashboardFolderManager({
 
   useEffect(() => {
     if (!open) return;
-    setChooseUsers([]);
+    setChooseUsers(data.users.map(v => v.id))
   }, []);
   function handleOk() {
     apiSetManager(data.id as number, chooseUsers).then(
