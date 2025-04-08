@@ -20,6 +20,7 @@ class Project(Model):
     project_id = Column(String(256))
     name = Column(String(256), nullable=False)
     project_name = Column(String(256), index=True)
+    is_active = Column(Integer, default=1)
     attrs_json = Column(Text, nullable=True)
 
     users = relationship(
