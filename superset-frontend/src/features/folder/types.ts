@@ -33,6 +33,11 @@ export interface DashboardFolder {
   sort_order: number;
   parent_folder_id?: number | null;
   parent?: DashboardFolder | null;
+  users: {
+    id: number
+    first_name: string
+    last_name: string
+  }[];
 }
 
 export interface DashboardInTree {
@@ -51,6 +56,11 @@ export interface FolderInTree {
   sort_order: number;
   children: FolderInTree[];
   dashboards: DashboardInTree[];
+  users: {
+    id: number
+    first_name: string
+    last_name: string
+  }[]
 }
 
 export interface FolderRootTree {

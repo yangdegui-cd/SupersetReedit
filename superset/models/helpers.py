@@ -43,6 +43,7 @@ from flask_appbuilder.security.sqla.models import User
 from flask_babel import lazy_gettext as _
 from jinja2.exceptions import TemplateError
 from markupsafe import escape, Markup
+from numpy.f2py.crackfortran import endifs
 from sqlalchemy import and_, Column, or_, UniqueConstraint
 from sqlalchemy.exc import MultipleResultsFound
 from sqlalchemy.ext.declarative import declared_attr
@@ -69,6 +70,7 @@ from superset.exceptions import (
 )
 from superset.extensions import feature_flag_manager
 from superset.jinja_context import BaseTemplateProcessor
+from superset.projects.models import ProjectCorrelationObject, ProjectCorrelationType
 from superset.sql_parse import (
     has_table_query,
     insert_rls_in_predicate,
@@ -310,6 +312,138 @@ class ImportExportMixin:
         try:
             obj_query = db.session.query(cls).filter(and_(*filters))
             obj = obj_query.one_or_none()
+        except MultipleResultsFound:
+            logger.error(
+                "Error importing %s \n %s \n %s",
+                cls.__name__,
+                str(obj_query),
+                yaml.safe_dump(dict_rep),
+                exc_info=True,
+            )
+            raise
+
+        if not obj:
+            is_new_obj = True
+            # Create new DB object
+            obj = cls(**dict_rep)
+            logger.info("Importing new %s %s", obj.__tablename__, str(obj))
+            if cls.export_parent and parent:
+                setattr(obj, cls.export_parent, parent)
+            db.session.add(obj)
+        else:
+            is_new_obj = False
+            logger.info("Updating %s %s", obj.__tablename__, str(obj))
+            # Update columns
+            for k, v in dict_rep.items():
+                setattr(obj, k, v)
+
+        # Recursively create children
+        if recursive:
+            for child in cls.export_children:
+                argument = cls.__mapper__.relationships[child].argument
+                child_class = (
+                    argument.class_ if hasattr(argument, "class_") else argument
+                )
+                added = []
+                for c_obj in new_children.get(child, []):
+                    added.append(
+                        child_class.import_from_dict(
+                            dict_rep=c_obj, parent=obj, sync=sync
+                        )
+                    )
+                # If children should get synced, delete the ones that did not
+                # get updated.
+                if child in sync and not is_new_obj:
+                    back_refs = child_class.parent_foreign_key_mappings()
+                    delete_filters = [
+                        getattr(child_class, k) == getattr(obj, back_refs.get(k))
+                        for k in back_refs.keys()
+                    ]
+                    to_delete = set(
+                        db.session.query(child_class).filter(and_(*delete_filters))
+                    ).difference(set(added))
+                    for o in to_delete:
+                        logger.info("Deleting %s %s", child, str(obj))
+                        db.session.delete(o)
+
+        return obj
+
+    @classmethod
+    def import_from_dict_with_project(
+        # pylint: disable=too-many-arguments,too-many-branches,too-many-locals
+        cls,
+        dict_rep: dict[Any, Any],
+        parent: Optional[Any] = None,
+        recursive: bool = True,
+        sync: Optional[list[str]] = None,
+        allow_reparenting: bool = False,
+        project_id: int = None,
+    ) -> Any:
+        """Import obj from a dictionary"""
+        if sync is None:
+            sync = []
+        parent_refs = cls.parent_foreign_key_mappings()
+        export_fields = (
+            set(cls.export_fields)
+            | set(cls.extra_import_fields)
+            | set(parent_refs.keys())
+            | {"uuid"}
+        )
+        new_children = {c: dict_rep[c] for c in cls.export_children if c in dict_rep}
+        unique_constraints = cls._unique_constraints()
+
+        filters = []  # Using these filters to check if obj already exists
+
+        # Remove fields that should not get imported
+        for k in list(dict_rep):
+            if k not in export_fields and k not in parent_refs:
+                del dict_rep[k]
+
+        if not parent:
+            if cls.export_parent:
+                for prnt in parent_refs.keys():
+                    if prnt not in dict_rep:
+                        raise RuntimeError(f"{cls.__name__}: Missing field {prnt}")
+        else:
+            # Set foreign keys to parent obj
+            for k, v in parent_refs.items():
+                dict_rep[k] = getattr(parent, v)
+
+        if not allow_reparenting:
+            # Add filter for parent obj
+            filters.extend(
+                [getattr(cls, k) == dict_rep.get(k) for k in parent_refs.keys()]
+            )
+
+        # Add filter for unique constraints
+        ucs = [
+            and_(
+                *[
+                    getattr(cls, k) == dict_rep.get(k)
+                    for k in cs
+                    if dict_rep.get(k) is not None
+                ]
+            )
+            for cs in unique_constraints
+        ]
+        filters.append(or_(*ucs))
+
+
+        # Check if object already exists in DB, break if more than one is found
+        try:
+            if project_id is None:
+                obj_query = db.session.query(cls).filter(and_(*filters))
+            else:
+                obj_query = (db.session.query(cls)
+                             .join(ProjectCorrelationObject,
+                                   ProjectCorrelationObject.object_id == cls.id)
+                                .filter(
+                    ProjectCorrelationObject.object_type == ProjectCorrelationType.from_model(cls))
+                                .filter(
+                    ProjectCorrelationObject.project_id == project_id)
+                                .filter(and_(*filters)))
+            obj = obj_query.one_or_none()
+
         except MultipleResultsFound:
             logger.error(
                 "Error importing %s \n %s \n %s",
