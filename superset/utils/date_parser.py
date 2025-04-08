@@ -277,8 +277,10 @@ def get_since_until(  # pylint: disable=too-many-arguments,too-many-locals,too-m
                     # converted matched time_range to "formal time expressions"
                     since_and_until.append(fn(*result.groups()))  # type: ignore
             if not matched:
-                # default matched case
-                since_and_until.append(f"DATETIME('{part}')")
+                if part.lower() == "now":
+                    since_and_until.append(f"DATEADD(DATETIME('now'), 2, DAY)")
+                else:
+                    since_and_until.append(f"DATETIME('{part}')")
 
         _since, _until = map(datetime_eval, since_and_until)
     else:
