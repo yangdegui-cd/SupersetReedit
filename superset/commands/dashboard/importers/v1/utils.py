@@ -20,7 +20,9 @@ from typing import Any
 
 from superset import db, security_manager
 from superset.commands.exceptions import ImportFailedError
+from superset.daos.project_correlation import ProjectCorrelationDAO
 from superset.models.dashboard import Dashboard
+from superset.projects.models import ProjectCorrelationObject, ProjectCorrelationType
 from superset.utils import json
 from superset.utils.core import get_user
 
@@ -152,7 +154,15 @@ def import_dashboard(
         "can_write",
         "Dashboard",
     )
-    existing = db.session.query(Dashboard).filter_by(uuid=config["uuid"]).first()
+    project_id = config["project_id"]
+    existing = (db.session.query(Dashboard)
+                               .join(ProjectCorrelationObject,
+                                     ProjectCorrelationObject.object_id == Dashboard.id)
+                               .filter(
+        ProjectCorrelationObject.object_type == ProjectCorrelationType.DASHBOARD)
+                               .filter(ProjectCorrelationObject.project_id == project_id)
+                               .filter(Dashboard.uuid == config["uuid"])
+                               .first())
     if existing:
         if overwrite and can_write and get_user():
             if not security_manager.can_access_dashboard(existing):
@@ -184,11 +194,17 @@ def import_dashboard(
             except TypeError:
                 logger.info("Unable to encode `%s` field: %s", key, value)
 
-    dashboard = Dashboard.import_from_dict(config, recursive=False)
+    dashboard = Dashboard.import_from_dict_with_project(config, recursive=False, project_id=project_id)
     if dashboard.id is None:
         db.session.flush()
 
     if (user := get_user()) and user not in dashboard.owners:
         dashboard.owners.append(user)
 
+    if project_id is not None:
+        ProjectCorrelationDAO.create_correlation(
+            project_id=project_id,
+            object_id=dashboard.id,
+            object_type=ProjectCorrelationType.DASHBOARD,
+        )
     return dashboard

@@ -21,9 +21,11 @@ from typing import Any
 
 from superset import db, security_manager
 from superset.commands.exceptions import ImportFailedError
+from superset.daos.project_correlation import ProjectCorrelationDAO
 from superset.migrations.shared.migrate_viz import processors
 from superset.migrations.shared.migrate_viz.base import MigrateViz
 from superset.models.slice import Slice
+from superset.projects.models import ProjectCorrelationObject, ProjectCorrelationType
 from superset.utils import json
 from superset.utils.core import AnnotationType, get_user
 
@@ -49,7 +51,15 @@ def import_chart(
     ignore_permissions: bool = False,
 ) -> Slice:
     can_write = ignore_permissions or security_manager.can_access("can_write", "Chart")
-    existing = db.session.query(Slice).filter_by(uuid=config["uuid"]).first()
+    project_id = config["project_id"]
+    existing = (db.session.query(Slice)
+                .join(ProjectCorrelationObject,
+                      ProjectCorrelationObject.object_id == Slice.id)
+                .filter(
+        ProjectCorrelationObject.object_type == ProjectCorrelationType.SLICE)
+                .filter(ProjectCorrelationObject.project_id == project_id)
+                .filter(Slice.uuid == config["uuid"])
+                .first())
     if existing:
         if overwrite and can_write and get_user():
             if not security_manager.can_access_chart(existing):
@@ -73,12 +83,19 @@ def import_chart(
     # migrate old viz types to new ones
     config = migrate_chart(config)
 
-    chart = Slice.import_from_dict(config, recursive=False, allow_reparenting=True)
+    chart = Slice.import_from_dict_with_project(config, recursive=False, allow_reparenting=True, project_id=project_id)
     if chart.id is None:
         db.session.flush()
 
     if (user := get_user()) and user not in chart.owners:
         chart.owners.append(user)
+
+    if project_id is not None:
+        ProjectCorrelationDAO.create_correlation(
+            project_id=project_id,
+            object_id=chart.id,
+            object_type=ProjectCorrelationType.SLICE,
+        )
 
     return chart
 
@@ -91,8 +108,8 @@ def migrate_chart(config: dict[str, Any]) -> dict[str, Any]:
         class_.source_viz_type: class_
         for class_ in processors.__dict__.values()
         if isclass(class_)
-        and issubclass(class_, MigrateViz)
-        and hasattr(class_, "source_viz_type")
+           and issubclass(class_, MigrateViz)
+           and hasattr(class_, "source_viz_type")
     }
 
     output = copy.deepcopy(config)

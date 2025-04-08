@@ -30,7 +30,9 @@ from superset import db, security_manager
 from superset.commands.dataset.exceptions import DatasetForbiddenDataURI
 from superset.commands.exceptions import ImportFailedError
 from superset.connectors.sqla.models import SqlaTable
+from superset.daos.project_correlation import ProjectCorrelationDAO
 from superset.models.core import Database
+from superset.projects.models import ProjectCorrelationType, ProjectCorrelationObject
 from superset.sql_parse import Table
 from superset.utils import json
 from superset.utils.core import get_user
@@ -108,11 +110,21 @@ def import_dataset(
     force_data: bool = False,
     ignore_permissions: bool = False,
 ) -> SqlaTable:
+
     can_write = ignore_permissions or security_manager.can_access(
         "can_write",
         "Dataset",
     )
-    existing = db.session.query(SqlaTable).filter_by(uuid=config["uuid"]).first()
+    project_id = config["project_id"]
+
+    existing = (db.session.query(SqlaTable)
+                .join(ProjectCorrelationObject,
+                      ProjectCorrelationObject.object_id == SqlaTable.id)
+                .filter(
+        ProjectCorrelationObject.object_type == ProjectCorrelationType.DATASET)
+                .filter(ProjectCorrelationObject.project_id == project_id)
+                .filter(SqlaTable.uuid == config["uuid"])
+                .first())
     if existing:
         if not overwrite or not can_write:
             return existing
@@ -149,7 +161,7 @@ def import_dataset(
 
     # import recursively to include columns and metrics
     try:
-        dataset = SqlaTable.import_from_dict(config, recursive=True, sync=sync)
+        dataset = SqlaTable.import_from_dict_with_project(config, recursive=True, sync=sync, project_id=project_id)
     except MultipleResultsFound:
         # Finding multiple results when importing a dataset only happens because initially
         # datasets were imported without schemas (eg, `examples.NULL.users`), and later
@@ -181,6 +193,12 @@ def import_dataset(
     if (user := get_user()) and user not in dataset.owners:
         dataset.owners.append(user)
 
+    if project_id is not None:
+        ProjectCorrelationDAO.create_correlation(
+            project_id=project_id,
+            object_id=dataset.id,
+            object_type=ProjectCorrelationType.DATASET,
+        )
     return dataset
 
 

@@ -185,6 +185,8 @@ def load_configs(
                     )
 
                 schema.load(config)
+                if prefix != "databases":
+                    config["project_id"] = int(contents["project_id"])
                 configs[file_name] = config
             except ValidationError as exc:
                 exc.messages = {file_name: exc.messages}
