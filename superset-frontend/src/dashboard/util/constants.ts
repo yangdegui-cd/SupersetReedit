@@ -36,13 +36,14 @@ export const NEW_DYNAMIC_COMPONENT = 'NEW_DYNAMIC_COMPONENT';
 // grid constants
 export const DASHBOARD_ROOT_DEPTH = 0;
 export const GRID_BASE_UNIT = 8;
+export const GRID_HEIGHT_UNIT = 40;
 export const GRID_GUTTER_SIZE = 2 * GRID_BASE_UNIT;
 export const GRID_COLUMN_COUNT = 12;
 export const GRID_MIN_COLUMN_COUNT = 1;
 export const GRID_MIN_ROW_UNITS = 5;
 export const GRID_MAX_ROW_UNITS = 100;
 export const GRID_MIN_ROW_HEIGHT = GRID_GUTTER_SIZE;
-export const GRID_DEFAULT_CHART_WIDTH = 4;
+export const GRID_DEFAULT_CHART_WIDTH = 6;
 
 // Header types
 export const SMALL_HEADER = 'SMALL_HEADER';

@@ -37,7 +37,7 @@ import { initialState } from 'src/SqlLab/fixtures';
 import { SET_DIRECT_PATH } from 'src/dashboard/actions/dashboardState';
 import { CHART_TYPE, COLUMN_TYPE, ROW_TYPE } from '../../util/componentTypes';
 import ChartHolder, { CHART_MARGIN } from './ChartHolder';
-import { GRID_BASE_UNIT, GRID_GUTTER_SIZE } from '../../util/constants';
+import { GRID_HEIGHT_UNIT, GRID_GUTTER_SIZE } from '../../util/constants';
 
 const DEFAULT_HEADER_HEIGHT = 22;
 
@@ -362,7 +362,7 @@ describe('ChartHolder', () => {
 
     const computedWidth = parseInt(container.getAttribute('height') || '0', 10);
     const expectedWidth = Math.floor(
-      heightMultiple * GRID_BASE_UNIT - CHART_MARGIN - DEFAULT_HEADER_HEIGHT,
+      heightMultiple * GRID_HEIGHT_UNIT - CHART_MARGIN - DEFAULT_HEADER_HEIGHT,
     );
 
     expect(computedWidth).toEqual(expectedWidth);

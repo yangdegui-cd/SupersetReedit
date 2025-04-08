@@ -33,7 +33,7 @@ import getChartAndLabelComponentIdFromPath from 'src/dashboard/util/getChartAndL
 import useFilterFocusHighlightStyles from 'src/dashboard/util/useFilterFocusHighlightStyles';
 import { COLUMN_TYPE, ROW_TYPE } from 'src/dashboard/util/componentTypes';
 import {
-  GRID_BASE_UNIT,
+  GRID_HEIGHT_UNIT,
   GRID_GUTTER_SIZE,
   GRID_MIN_COLUMN_COUNT,
   GRID_MIN_ROW_UNITS,
@@ -203,7 +203,7 @@ const ChartHolder: React.FC<ChartHolderProps> = ({
           CHART_MARGIN,
       );
       chartHeight = Math.floor(
-        component.meta.height * GRID_BASE_UNIT - CHART_MARGIN,
+        component.meta.height * GRID_HEIGHT_UNIT - CHART_MARGIN,
       );
     }
 
@@ -261,7 +261,7 @@ const ChartHolder: React.FC<ChartHolderProps> = ({
           adjustableHeight
           widthStep={columnWidth}
           widthMultiple={widthMultiple}
-          heightStep={GRID_BASE_UNIT}
+          heightStep={GRID_HEIGHT_UNIT}
           heightMultiple={component.meta.height}
           minWidthMultiple={GRID_MIN_COLUMN_COUNT}
           minHeightMultiple={GRID_MIN_ROW_UNITS}
