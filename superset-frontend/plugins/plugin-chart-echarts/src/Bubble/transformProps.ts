@@ -37,6 +37,7 @@ import { getDefaultTooltip } from '../utils/tooltip';
 import { getPadding } from '../Timeseries/transformers';
 import { convertInteger } from '../utils/convertInteger';
 import { NULL_STRING } from '../constants';
+import { calculateArray } from './calculateArray';
 
 function normalizeSymbolSize(
   nodes: ScatterSeriesOption[],
@@ -108,6 +109,7 @@ export default function transformProps(chartProps: EchartsBubbleChartProps) {
     legendOrientation,
     legendMargin,
     legendType,
+    markLines,
   }: EchartsBubbleFormData = { ...DEFAULT_FORM_DATA, ...formData };
 
   const colorFn = CategoricalColorNamespace.getScale(colorScheme as string);
@@ -165,6 +167,35 @@ export default function transformProps(chartProps: EchartsBubbleChartProps) {
   );
 
   const xAxisType = logXAxis ? AxisType.Log : AxisType.Value;
+  if (markLines && markLines.length > 0 && series.length > 0) {
+    series.forEach((serie: ScatterSeriesOption) => {
+      const markLine = markLines.map(line => {
+        const row: any = {
+          name: line.name,
+          symbolSize: [0, 0],
+          lineStyle: {
+            color: line.color,
+            type: line.lineType,
+            width: line.width,
+          },
+        };
+        if (line.dataIndex === 1) {
+          row.yAxis = calculateArray(
+            data.map(d => d[yAxisLabel] as number),
+            line.aggType,
+          );
+        } else {
+          row.xAxis = calculateArray(
+            data.map(d => d[xAxisLabel] as number),
+            line.aggType,
+          );
+        }
+        return row;
+      });
+      // eslint-disable-next-line no-param-reassign
+      serie.markLine = { data: markLine };
+    });
+  }
   const echartOptions: EChartsCoreOption = {
     series,
     xAxis: {
