@@ -24,7 +24,11 @@ import { css, styled } from '@superset-ui/core';
 
 import ResizableHandle from './ResizableHandle';
 import resizableConfig from '../../util/resizableConfig';
-import { GRID_BASE_UNIT, GRID_GUTTER_SIZE } from '../../util/constants';
+import {
+  GRID_BASE_UNIT,
+  GRID_GUTTER_SIZE,
+  GRID_HEIGHT_UNIT,
+} from '../../util/constants';
 
 const proxyToInfinity = Number.MAX_VALUE;
 
@@ -58,7 +62,7 @@ const defaultProps = {
   adjustableHeight: true,
   gutterWidth: GRID_GUTTER_SIZE,
   widthStep: GRID_BASE_UNIT,
-  heightStep: GRID_BASE_UNIT,
+  heightStep: GRID_HEIGHT_UNIT,
   widthMultiple: null,
   heightMultiple: null,
   minWidthMultiple: 1,
@@ -76,7 +80,7 @@ const defaultProps = {
 
 // because columns are not multiples of a single variable (width = n*cols + (n-1) * gutters)
 // we snap to the base unit and then snap to _actual_ column multiples on stop
-const SNAP_TO_GRID = [GRID_BASE_UNIT, GRID_BASE_UNIT];
+const SNAP_TO_GRID = [GRID_BASE_UNIT, GRID_HEIGHT_UNIT];
 const HANDLE_CLASSES = {
   right: 'resizable-container-handle--right',
   bottom: 'resizable-container-handle--bottom',
