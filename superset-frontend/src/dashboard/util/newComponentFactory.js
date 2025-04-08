@@ -39,7 +39,7 @@ import {
 } from './constants';
 
 const typeToDefaultMetaData = {
-  [CHART_TYPE]: { width: GRID_DEFAULT_CHART_WIDTH, height: 50 },
+  [CHART_TYPE]: { width: GRID_DEFAULT_CHART_WIDTH, height: 10 },
   [COLUMN_TYPE]: {
     width: GRID_DEFAULT_CHART_WIDTH,
     background: BACKGROUND_TRANSPARENT,
@@ -50,7 +50,7 @@ const typeToDefaultMetaData = {
     headerSize: MEDIUM_HEADER,
     background: BACKGROUND_TRANSPARENT,
   },
-  [MARKDOWN_TYPE]: { width: GRID_DEFAULT_CHART_WIDTH, height: 50 },
+  [MARKDOWN_TYPE]: { width: GRID_DEFAULT_CHART_WIDTH, height: 10 },
   [ROW_TYPE]: { background: BACKGROUND_TRANSPARENT },
   [TABS_TYPE]: null,
   [TAB_TYPE]: {
