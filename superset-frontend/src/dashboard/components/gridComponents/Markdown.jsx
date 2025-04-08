@@ -36,7 +36,7 @@ import { ROW_TYPE, COLUMN_TYPE } from 'src/dashboard/util/componentTypes';
 import {
   GRID_MIN_COLUMN_COUNT,
   GRID_MIN_ROW_UNITS,
-  GRID_BASE_UNIT,
+  GRID_HEIGHT_UNIT,
 } from 'src/dashboard/util/constants';
 
 const propTypes = {
@@ -368,7 +368,7 @@ class Markdown extends PureComponent {
                 adjustableHeight
                 widthStep={columnWidth}
                 widthMultiple={widthMultiple}
-                heightStep={GRID_BASE_UNIT}
+                heightStep={GRID_HEIGHT_UNIT}
                 heightMultiple={component.meta.height}
                 minWidthMultiple={GRID_MIN_COLUMN_COUNT}
                 minHeightMultiple={GRID_MIN_ROW_UNITS}

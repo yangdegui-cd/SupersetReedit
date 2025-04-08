@@ -8,8 +8,8 @@ export const nodeDrop = (info: any, treeData: DataNode[], setTreeData: Dispatch<
 
 // 插入节点的逻辑
   function insertNode(data: DataNode[], dragNode: DataNode, dropKey: string, dropToGap: boolean): void {
-    let dropNode: DataNode | undefined = findNode(data, dropKey);
-    let parentNode: DataNode | undefined = findParentNode(data, dropKey);
+    const dropNode: DataNode | undefined = findNode(data, dropKey);
+    const parentNode: DataNode | undefined = findParentNode(data, dropKey);
 
     if (!dropNode) return;
     // 目标是文件夹，拖拽的是文件，且放在文件夹外部的情况，不执行操作
@@ -67,7 +67,7 @@ export const nodeDrop = (info: any, treeData: DataNode[], setTreeData: Dispatch<
     for (const item of data) {
       if (item.key === key) {
         return item;
-      } else if (item.children) {
+      } if (item.children) {
         node = findNode(item.children, key);
         if (node) return node;
       }
@@ -77,11 +77,12 @@ export const nodeDrop = (info: any, treeData: DataNode[], setTreeData: Dispatch<
 
   // 删除拖动节点的函数...
   function removeNode(data: DataNode[], key: string): void {
+    // eslint-disable-next-line no-plusplus
     for (let i = 0; i < data.length; i++) {
       if (data[i].key === key) {
         data.splice(i, 1);
         return;
-      } else if (data[i].children) {
+      } if (data[i].children) {
         removeNode(data[i].children as DataNode[], key);
       }
     }
@@ -92,7 +93,7 @@ export const nodeDrop = (info: any, treeData: DataNode[], setTreeData: Dispatch<
     for (const item of data) {
       if (item.key === key) {
         return parent;
-      } else if (item.children) {
+      } if (item.children) {
         const result = findParentNode(item.children, key, item);
         if (result) return result;
       }
@@ -101,7 +102,7 @@ export const nodeDrop = (info: any, treeData: DataNode[], setTreeData: Dispatch<
   }
 
   // 找到拖动的节点
-  let dragNode = findNode(treeData, dragKey);
+  const dragNode = findNode(treeData, dragKey);
   if (dragNode) {
     insertNode(treeData, dragNode, dropKey, dropToGap); // 再插入
   }

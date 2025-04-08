@@ -37,5 +37,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "@types/d3-array": "^3.2.1"
   }
 }

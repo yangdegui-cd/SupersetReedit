@@ -267,6 +267,18 @@ const config: ControlPanelConfig = {
             },
           },
         ],
+        [
+          {
+            name: 'markLines',
+            config: {
+              type: 'MarkLineControl',
+              label: t('辅助线设置'),
+              default: [],
+              renderTrigger: true,
+              description: t('设置辅助线'),
+            },
+          },
+        ],
       ],
     },
   ],

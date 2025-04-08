@@ -30,6 +30,7 @@ function buildFolderTree(
         sort_order: folder.sort_order,
         children: [],
         dashboards: [],
+        users: folder.users,
       };
     }
     if (dashboard) {
@@ -49,6 +50,7 @@ function buildFolderTree(
           sort_order: parent.sort_order,
           children: [],
           dashboards: [],
+          users: parent.users,
         };
       }
       // 检查 parent 的 children 中是否已经存在该 folder
@@ -79,6 +81,7 @@ function buildFolderTree(
           sort_order: currentFolder.sort_order,
           children: [],
           dashboards: [],
+          users: currentFolder.users,
         };
       }
 

@@ -21,9 +21,10 @@
 # create you own docker environment file (docker/.env) with your own
 # unique random secure passwords and SECRET_KEY.
 # -----------------------------------------------------------------------
+x-superset-image: &superset-image apachesuperset.docker.scarf.sh/apache/superset:${TAG:-latest}
 x-superset-user: &superset-user root
 x-superset-depends-on: &superset-depends-on
-  - db
+#  - db
   - redis
 x-superset-volumes: &superset-volumes
   # /app/pythonpath_docker will be appended to the PYTHONPATH in the final container
@@ -40,6 +41,22 @@ x-common-build: &common-build
     - apache/superset-cache:3.10-slim-bookworm
 
 services:
+  chromedriver:
+#    image: selenium/standalone-chrome:latest  # 使用 Selenium 官方镜像，包含 Chrome 和 ChromeDriver
+    image: seleniarm/standalone-chromium:latest  # 使用 Selenium 官方镜像，包含 Chrome 和 ChromeDriver
+    container_name: superset_chromedriver
+    restart: unless-stopped
+    ports:
+      - "4444:4444"  # ChromeDriver 的默认端口
+    shm_size: "2g"   # 设置共享内存大小，避免 Chrome 崩溃
+    environment:
+      - SE_NODE_MAX_SESSIONS=10  # 最大会话数
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+    depends_on:
+      - redis  # 如果需要依赖 Redis
+    networks:
+      - default
+
   nginx:
     image: nginx:latest
     container_name: superset_nginx
@@ -59,20 +76,20 @@ services:
     volumes:
       - redis:/data
 
-  db:
-    env_file:
-      - path: docker/.env # default
-        required: true
-      - path: docker/.env-local # optional override
-        required: false
-    image: postgres:15
-    container_name: superset_db
-    restart: unless-stopped
-    ports:
-      - "127.0.0.1:5432:5432"
-    volumes:
-      - db_home:/var/lib/postgresql/data
-      - ./docker/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+#  db:
+#    env_file:
+#      - path: docker/.env # default
+#        required: true
+#      - path: docker/.env-local # optional override
+#        required: false
+#    image: postgres:15
+#    container_name: superset_db
+#    restart: unless-stopped
+#    ports:
+#      - "127.0.0.1:5432:5432"
+#    volumes:
+#      - db_home:/var/lib/postgresql/data
+#      - ./docker/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
 
   superset:
     env_file:
@@ -80,13 +97,12 @@ services:
         required: true
       - path: docker/.env-local # optional override
         required: false
-    build:
-      <<: *common-build
+    image: *superset-image
     container_name: superset_app
     command: ["/app/docker/docker-bootstrap.sh", "app"]
     restart: unless-stopped
     ports:
-      - 8088:8088
+      - "9100:8088"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     user: *superset-user
@@ -98,8 +114,8 @@ services:
   superset-websocket:
     container_name: superset_websocket
     build: ./superset-websocket
-    ports:
-      - 8080:8080
+#    ports:
+#      - 8080:8080
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -129,8 +145,7 @@ services:
       - REDIS_SSL=false
 
   superset-init:
-    build:
-      <<: *common-build
+    image: *superset-image
     container_name: superset_init
     command: ["/app/docker/docker-init.sh"]
     env_file:
@@ -164,8 +179,7 @@ services:
     volumes: *superset-volumes
 
   superset-worker:
-    build:
-      <<: *common-build
+    image: *superset-image
     container_name: superset_worker
     command: ["/app/docker/docker-bootstrap.sh", "worker"]
     env_file:
@@ -174,7 +188,7 @@ services:
       - path: docker/.env-local # optional override
         required: false
     environment:
-      CELERYD_CONCURRENCY: 2
+      CELERYD_CONCURRENCY: 16
     restart: unless-stopped
     depends_on: *superset-depends-on
     user: *superset-user
@@ -188,8 +202,7 @@ services:
     # mem_reservation: 128M
 
   superset-worker-beat:
-    build:
-      <<: *common-build
+    image: *superset-image
     container_name: superset_worker_beat
     command: ["/app/docker/docker-bootstrap.sh", "beat"]
     env_file:
@@ -204,31 +217,47 @@ services:
     healthcheck:
       disable: true
 
-  superset-tests-worker:
-    build:
-      <<: *common-build
-    container_name: superset_tests_worker
-    command: ["/app/docker/docker-bootstrap.sh", "worker"]
-    env_file:
-      - path: docker/.env # default
-        required: true
-      - path: docker/.env-local # optional override
-        required: false
-    profiles:
-      - optional
-    environment:
-      DATABASE_HOST: localhost
-      DATABASE_DB: test
-      REDIS_CELERY_DB: 2
-      REDIS_RESULTS_DB: 3
-      REDIS_HOST: localhost
-      CELERYD_CONCURRENCY: 8
-    network_mode: host
+  superset-flower:
+    image: *superset-image
+    container_name: superset_flower
+    command: [ "/app/docker/docker-bootstrap.sh", "flower" ]
+    env_file: docker/.env
+    restart: unless-stopped
     depends_on: *superset-depends-on
     user: *superset-user
     volumes: *superset-volumes
+    ports:
+      - 5555:5555
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     healthcheck:
-      test: ["CMD-SHELL", "celery inspect ping -A superset.tasks.celery_app:app -d celery@$$HOSTNAME"]
+      test: [ "CMD-SHELL", "celery -A superset.tasks.celery_app:app inspect ping -d celery@$$HOSTNAME" ]
+
+#  superset-tests-worker:
+#    build:
+#      <<: *common-build
+#    container_name: superset_tests_worker
+#    command: ["/app/docker/docker-bootstrap.sh", "worker"]
+#    env_file:
+#      - path: docker/.env # default
+#        required: true
+#      - path: docker/.env-local # optional override
+#        required: false
+#    profiles:
+#      - optional
+#    environment:
+#      DATABASE_HOST: localhost
+#      DATABASE_DB: test
+#      REDIS_CELERY_DB: 2
+#      REDIS_RESULTS_DB: 3
+#      REDIS_HOST: localhost
+#      CELERYD_CONCURRENCY: 8
+#    network_mode: host
+#    depends_on: *superset-depends-on
+#    user: *superset-user
+#    volumes: *superset-volumes
+#    healthcheck:
+#      test: ["CMD-SHELL", "celery inspect ping -A superset.tasks.celery_app:app -d celery@$$HOSTNAME"]
 
 volumes:
   superset_home:

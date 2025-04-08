@@ -394,20 +394,6 @@ const RightMenu = ({
           type="columnar"
         />
       )}
-      {/*{environmentTag?.text && (*/}
-      {/*  <Label*/}
-      {/*    css={{ borderRadius: `${theme.gridUnit * 125}px` }}*/}
-      {/*    color={*/}
-      {/*      /^#(?:[0-9a-f]{3}){1,2}$/i.test(environmentTag.color)*/}
-      {/*        ? environmentTag.color*/}
-      {/*        : environmentTag.color*/}
-      {/*          .split(".")*/}
-      {/*          .reduce((o, i) => o[i], theme.colors)*/}
-      {/*    }*/}
-      {/*  >*/}
-      {/*    <span css={tagStyles}>{environmentTag.text}</span>*/}
-      {/*  </Label>*/}
-      {/*)}*/}
       <Menu
         selectable={false}
         mode="horizontal"

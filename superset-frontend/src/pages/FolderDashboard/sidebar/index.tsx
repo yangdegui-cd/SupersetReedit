@@ -8,26 +8,13 @@ import { useHistory, useParams } from 'react-router-dom';
 import RenameFolder from 'src/features/folder/RenameFolder';
 import SetDashboardFolderManager from 'src/features/folder/SetManager';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  DashboardFolder,
-  DashboardInFolder,
-  FolderRootTree,
-} from '../../../features/folder/types';
+import { DashboardFolder, DashboardInFolder, FolderRootTree } from '../../../features/folder/types';
 import { hasPerm } from '../../../utils/permission';
-import {
-  convertDashboardsToTree,
-  isEmptyTree,
-} from '../../../features/folder/convert_dashboards';
+import { convertDashboardsToTree, isEmptyTree } from '../../../features/folder/convert_dashboards';
 import Loading from '../../../components/Loading';
 import { apiDeleteFolder, apiRenameFolder } from '../../../features/folder/api';
-import {
-  addDangerToast,
-  addSuccessToast,
-} from '../../../components/MessageToasts/actions';
-import {
-  createErrorHandler,
-  handleDashboardDelete,
-} from '../../../views/CRUD/utils';
+import { addDangerToast, addSuccessToast } from '../../../components/MessageToasts/actions';
+import { createErrorHandler, handleDashboardDelete } from '../../../views/CRUD/utils';
 import DeleteModal from '../../../components/DeleteModal';
 import PropertiesModal from '../../../dashboard/components/PropertiesModal';
 import FolderManage from '../../../features/folder/FolderManage';
@@ -35,6 +22,8 @@ import { RootState } from '../../../views/store';
 import { useChoiceProject } from '../../../features/home/ProjectPicker';
 import FolderItem from '../../../features/folder/FolderItem';
 import DashboardItem from '../../../features/folder/DashboardItem';
+import { URL_PARAMS } from '../../../constants';
+import { getUrlParam } from '../../../utils/urlUtils';
 
 function FolderSidebar() {
   const source = 'Folder';
@@ -68,6 +57,7 @@ function FolderSidebar() {
   const [folderToSetManager, setFolderToSetManager] = useState<
     DashboardFolder | undefined
   >(undefined);
+  const firstRender = React.useRef(true);
 
   const handleGetList = () => {
     setLoading(true);
@@ -109,7 +99,7 @@ function FolderSidebar() {
     };
   }, []);
 
-  useEffect(() => handleGetList(), []);
+  useEffect(() => handleGetList(), [current_project]);
 
   useEffect(() => {
     if (idOrSlug === undefined || idOrSlug === null) {
@@ -121,10 +111,32 @@ function FolderSidebar() {
     }
   }, [idOrSlug, dashboards]);
 
+  useEffect(() => {
+    if (!idOrSlug) return;
+    if (getUrlParam(URL_PARAMS.edit)) return;
+    if (history.action === 'POP' && !!idOrSlug) {
+      return;
+    }
+    if(firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    const includeCurrentPage: boolean =
+      !!idOrSlug &&
+      (dashboards.map(v => v.id).includes(Number(idOrSlug)) ||
+        dashboards.map(v => v.slug).includes(idOrSlug));
+    if (!includeCurrentPage) {
+      const first = dashboards[0];
+      if (first) history.push(first.url);
+      else history.push('/dashboard/list');
+    }
+  }, [dashboards]);
+
   function handleAddSubFolder(data: DashboardFolder) {
     setAddFolderParentId(data.id);
     setOpenAddModel(true);
   }
+
   const handleFilterChange = (e: any) => setFilterString(e.target.value);
   const handleDeleteFolderClick = (data: DashboardFolder) =>
     setFolderToDelete(data);
@@ -140,39 +152,39 @@ function FolderSidebar() {
   const handleRenameFolder = (new_name: string) => {
     // eslint-disable-next-line no-unused-expressions
     folderToRename &&
-      apiRenameFolder(folderToRename, new_name)
-        .then(
-          () => {
-            addSuccessToast(t('rename folder success'));
-            handleGetList();
-          },
-          createErrorHandler(errMsg =>
-            addDangerToast(
-              t('An error occurred while rename dashboard folder: %s', errMsg),
-            ),
+    apiRenameFolder(folderToRename, new_name)
+      .then(
+        () => {
+          addSuccessToast(t('rename folder success'));
+          handleGetList();
+        },
+        createErrorHandler(errMsg =>
+          addDangerToast(
+            t('An error occurred while rename dashboard folder: %s', errMsg),
           ),
-        )
-        .finally(() => setFolderToRename(undefined));
+        ),
+      )
+      .finally(() => setFolderToRename(undefined));
   };
   const handleDeleteFolder = () => {
     // eslint-disable-next-line no-unused-expressions
     folderToDelete &&
-      apiDeleteFolder(folderToDelete)
-        .then(
-          () => {
-            addSuccessToast(t('delete folder success'));
-            handleGetList();
-          },
-          createErrorHandler(errMsg =>
-            addDangerToast(
-              t(
-                'An error occurred while deleting dashboard folder: %s',
-                errMsg,
-              ),
+    apiDeleteFolder(folderToDelete)
+      .then(
+        () => {
+          addSuccessToast(t('delete folder success'));
+          handleGetList();
+        },
+        createErrorHandler(errMsg =>
+          addDangerToast(
+            t(
+              'An error occurred while deleting dashboard folder: %s',
+              errMsg,
             ),
           ),
-        )
-        .finally(() => setFolderToDelete(undefined));
+        ),
+      )
+      .finally(() => setFolderToDelete(undefined));
   };
 
   const SidebarHeader = () => {

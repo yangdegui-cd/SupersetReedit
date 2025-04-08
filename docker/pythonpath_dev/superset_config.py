@@ -22,11 +22,30 @@
 #
 import logging
 import os
+from datetime import datetime, timedelta
 
 from celery.schedules import crontab
+from flask_appbuilder.const import AUTH_DB
 from flask_caching.backends.filesystemcache import FileSystemCache
 
 logger = logging.getLogger()
+
+
+def custom_dttm(dttm: str, default: str = None, shift: int = 0):
+    if dttm or default:
+        dttm = dttm or default
+        dttm = dttm[:10]
+    else:
+        dttm = (datetime.today() + timedelta(days=shift)).strftime('%Y-%m-%d')
+    return dttm
+
+
+def custom_in(filters: list, *default: tuple[str,]):
+    if not filters:
+        filters = default
+
+    return "'" + "', '".join(filters) + "'"
+
 
 BABEL_DEFAULT_LOCALE = "zh"
 LANGUAGES = {
@@ -46,6 +65,9 @@ EXAMPLES_HOST = os.getenv("EXAMPLES_HOST")
 EXAMPLES_PORT = os.getenv("EXAMPLES_PORT")
 EXAMPLES_DB = os.getenv("EXAMPLES_DB")
 
+AUTH_RATE_LIMIT = "5 per minute"
+AUTH_TYPE = AUTH_DB
+
 GLOBAL_ASYNC_QUERIES_JWT_SECRET = "ybT0MnlPEvTdJI2LQafnmzMzYTiaWpXk58bgmMG4coY"
 # The SQLAlchemy connection string.
 # SQLALCHEMY_DATABASE_URI = (
@@ -54,19 +76,32 @@ GLOBAL_ASYNC_QUERIES_JWT_SECRET = "ybT0MnlPEvTdJI2LQafnmzMzYTiaWpXk58bgmMG4coY"
 #     f"{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_DB}"
 # )
 
+# SQLALCHEMY_DATABASE_URI = (
+#     "mysql://root:6987528@192.168.108.166/superset2?"
+#     # "mysql://root:6987528@192.168.99.74/superset2?"
+#     "charset=utf8mb4"
+# )
+# SQLALCHEMY_DATABASE_URI = (
+#     "mysql://superset_reedit:supersetHq1@"
+#     "gz-cdb-aptruv0y.sql.tencentcdb.com:63846/superset_reedit?"
+#     "charset=utf8mb4"
+# )
+
+# SQLALCHEMY_DATABASE_URI = (
+#     "mysql://superset_reedit:supersetHq1@10.66.189.109/superset_reedit?"
+#     "charset=utf8mb4"
+# )
+#
 SQLALCHEMY_DATABASE_URI = (
-    "mysql://root:6987528@192.168.108.166/superset2?"
-    # "mysql://root:6987528@192.168.99.74/superset2?"
+    "mysql://root:6987528@192.168.108.195/superset2?"
     "charset=utf8mb4"
 )
-
 
 SQLALCHEMY_EXAMPLES_URI = (
     f"{DATABASE_DIALECT}://"
     f"{EXAMPLES_USER}:{EXAMPLES_PASSWORD}@"
     f"{EXAMPLES_HOST}:{EXAMPLES_PORT}/{EXAMPLES_DB}"
 )
-
 
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
@@ -108,10 +143,12 @@ class CeleryConfig:
         "superset.tasks.scheduler",
         "superset.tasks.thumbnails",
         "superset.tasks.cache",
+        # "superset.tasks.refresh_dashboard_job",
     )
     result_backend = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_RESULTS_DB}"
-    worker_prefetch_multiplier = 1
+    worker_prefetch_multiplier = 4
     task_acks_late = False
+    timezone = "Asia/Shanghai"
     beat_schedule = {
         "reports.scheduler": {
             "task": "reports.scheduler",
@@ -121,6 +158,14 @@ class CeleryConfig:
             "task": "reports.prune_log",
             "schedule": crontab(minute=10, hour=0),
         },
+        "dashboard.schedule_refresh": {
+            "task": "dashboard.schedule_refresh",
+            "schedule": crontab(minute="*", hour="*"),
+        },
+        "dashboard.set_default_schedule_refresh": {
+            "task": "dashboard.set_default_schedule_refresh",
+            "schedule": crontab(minute='20', hour='17'),
+        }
     }
 
 
@@ -155,6 +200,11 @@ WEBDRIVER_BASEURL = "http://superset:8088/"  # When using docker compose baseurl
 # The base URL for the email report hyperlinks.
 WEBDRIVER_BASEURL_USER_FRIENDLY = WEBDRIVER_BASEURL
 SQLLAB_CTAS_NO_LIMIT = True
+
+JINJA_CONTEXT_ADDONS = {
+    'custom_dttm': custom_dttm,
+    'custom_in': custom_in,
+}
 
 #
 # Optionally import superset_config_docker.py (which will have been included on

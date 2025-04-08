@@ -202,7 +202,7 @@ def dumps(  # pylint: disable=too-many-arguments
     results_string = ""
     dumps_kwargs: Dict[str, Any] = {
         "default": default,
-        "allow_nan": allow_nan,
+        # "allow_nan": allow_nan,
         "ignore_nan": ignore_nan,
         "sort_keys": sort_keys,
         "indent": indent,
@@ -237,7 +237,7 @@ def loads(
         return simplejson.loads(
             obj,
             encoding=encoding,
-            allow_nan=allow_nan,
+            # allow_nan=allow_nan,
             object_hook=object_hook,
         )
     except JSONDecodeError as ex:
