@@ -157,6 +157,16 @@ class Dashboard(AuditMixinNullable, ImportExportMixin, Model):
         secondaryjoin="TaggedObject.tag_id == Tag.id",
         viewonly=True,  # cascading deletion already handled by superset.tags.models.ObjectUpdater.after_delete
     )
+    project = relationship(
+        "Project",
+        secondary="project_correlation_object",
+        secondaryjoin="and_(Project.id == ProjectCorrelationObject.project_id, "
+                      "ProjectCorrelationObject.object_type == 'dashboard')",
+        primaryjoin="Dashboard.id == ProjectCorrelationObject.object_id",
+        viewonly=True,
+        uselist=False,  # 指明是多对一关系，Dashboard 只会有一个 Project
+    )
+
     published = Column(Boolean, default=False)
     is_managed_externally = Column(Boolean, nullable=False, default=False)
     external_url = Column(Text, nullable=True)
@@ -437,6 +447,23 @@ class Dashboard(AuditMixinNullable, ImportExportMixin, Model):
         """
 
         security_manager.raise_for_access(dashboard=self)
+
+class DashboardConfig(Model):
+    __tablename__ = "dashboard_config"
+    id = Column(Integer, primary_key=True)
+    dashboard_id = Column(Integer, ForeignKey(Dashboard.id), primary_key=True)
+    cache_time = Column(String(225))
+
+
+class DashboardAccessLogs(Model):
+    __tablename__ = "dashboard_access_logs"
+    id = Column(Integer, primary_key=True)
+    dashboard_id = Column(Integer, ForeignKey(Dashboard.id), primary_key=True)
+    dashboard_name = Column(String(500))
+    project_name = Column(String(500))
+    time = Column(String(225))
+    user_id = Column(Integer, ForeignKey(User.id))
+    user_name = Column(String(225))
 
 
 def is_uuid(value: str | int) -> bool:
