@@ -27,7 +27,7 @@ import WithPopoverMenu from '../menu/WithPopoverMenu';
 import ResizableContainer from '../resizable/ResizableContainer';
 import {
   BACKGROUND_TRANSPARENT,
-  GRID_BASE_UNIT,
+  GRID_HEIGHT_UNIT,
   GRID_MIN_COLUMN_COUNT,
 } from '../../util/constants';
 import HoverMenu from '../menu/HoverMenu';
@@ -142,7 +142,7 @@ const DynamicComponent: FC<FilterSummaryType> = ({
               adjustableWidth={parentComponent.type === ROW_TYPE}
               widthStep={columnWidth}
               widthMultiple={widthMultiple}
-              heightStep={GRID_BASE_UNIT}
+              heightStep={GRID_HEIGHT_UNIT}
               adjustableHeight={false}
               heightMultiple={component.meta.height}
               minWidthMultiple={GRID_MIN_COLUMN_COUNT}
