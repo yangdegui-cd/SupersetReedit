@@ -25,19 +25,21 @@ class FolderRestApi(BaseSupersetModelRestApi):
     resource_name = "folder"
 
     allow_browser_login = True
-    class_permission_name = "Folder"
+    class_permission_name = "DashboardFolder"
     include_route_methods = RouteMethod.REST_MODEL_VIEW_CRUD_SET | {
         RouteMethod.EXPORT,
         RouteMethod.IMPORT,
         RouteMethod.RELATED,
         'get_list',
-        'save_sort'
+        'save_sort',
+        'set_manager'
     }
 
     method_permission_name = {
         **MODEL_API_RW_METHOD_PERMISSION_MAP,
         "get_list": "read",
         "save_sort": "write",
+        "set_manager": "write"
     }
 
     edit_columns = ["name"]
@@ -98,6 +100,27 @@ class FolderRestApi(BaseSupersetModelRestApi):
         try:
             SaveSortDashboardFolderCommand(item).run()
             return self.response(201)
+        except Exception as ex:
+            logger.error(
+                "Error creating model %s: %s",
+                self.__class__.__name__,
+                str(ex),
+                exc_info=True,
+            )
+            return self.response_422(message=str(ex))
+
+
+    @expose("/set_manager/<pk>", methods=["PUT"])
+    @protect()
+    @statsd_metrics
+    @event_logger.log_this_with_context(
+        action=lambda self, *args, **kwargs: f"{self.__class__.__name__}.put",
+    )
+    def set_manager(self, pk: int):
+        try:
+            uids = request.args.get("users", "")
+            FolderDAO.set_manager(pk, uids)
+            return self.response(200)
         except Exception as ex:
             logger.error(
                 "Error creating model %s: %s",
