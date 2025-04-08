@@ -1,0 +1,32 @@
+{
+  "name": "@superset-ui/plugin-chart-bullet-chart",
+  "version": "1.0.0",
+  "description": "Superset Chart - Retention Table",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "files": [
+    "src"
+  ],
+  "author": "yang.degui",
+  "license": "ISC",
+  "peerDependencies": {
+    "@superset-ui/chart-controls": "*",
+    "@superset-ui/core": "*",
+    "@types/classnames": "*",
+    "@types/react": "*",
+    "antd": "^4.10.3",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  },
+  "dependencies": {
+    "d3": "^7.9.0",
+    "nvd3": "^1.8.6",
+    "react-nvd3": "^0.5.7"
+  },
+  "devDependencies": {
+    "@types/d3": "^7.4.3",
+    "@types/nvd3": "^1.8.45"
+  }
+}

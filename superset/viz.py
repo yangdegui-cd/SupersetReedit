@@ -915,6 +915,32 @@ class BulletViz(NVD3Viz):
             "measures": values.tolist(),
         }
 
+class Bullet2Viz(NVD3Viz):
+    """Based on the NVD3 bullet chart"""
+
+    viz_type = "bullet2"
+    verbose_name = _("Bullet2 Chart")
+    is_timeseries = False
+
+    @deprecated(deprecated_in="3.0")
+    def query_obj(self) -> QueryObjectDict:
+        form_data = self.form_data
+        query_obj = super().query_obj()
+        self.metric = form_data[  # pylint: disable=attribute-defined-outside-init
+            "metric"
+        ]
+        self.marker = form_data["marker"]
+        self.marker_line = form_data["marker_line"]
+        self.range = form_data["range"]
+        self.group = form_data["group"]
+
+        query_obj["metrics"] = [self.metric, self.marker, self.marker_line, self.range]
+        query_obj["groupby"] = [self.group]
+
+        if not self.metric:
+            raise QueryObjectValidationError(_("Pick a metric to display"))
+        return query_obj
+
 
 class NVD3TimeSeriesViz(NVD3Viz):
     """A rich line chart component with tons of options"""
