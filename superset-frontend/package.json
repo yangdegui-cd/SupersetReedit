@@ -214,7 +214,7 @@
     "@applitools/eyes-storybook": "^3.50.7",
     "@babel/cli": "^7.22.6",
     "@babel/compat-data": "^7.22.6",
-    "@babel/core": "^7.23.9",
+    "@babel/core": "^7.27.1",
     "@babel/eslint-parser": "^7.23.10",
     "@babel/node": "^7.22.6",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
