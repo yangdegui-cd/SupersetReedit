@@ -16,9 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { ChartProps, getColumnLabel, getMetricLabel, QueryFormData } from '@superset-ui/core';
+import {
+  ChartProps,
+  getColumnLabel,
+  getMetricLabel,
+  QueryFormData,
+} from '@superset-ui/core';
 // eslint-disable-next-line lodash/import-scope,import/no-extraneous-dependencies
-import _ from 'lodash';
+import _, { sortBy } from 'lodash';
 
 
 export default function transformProps(chartProps: ChartProps<QueryFormData>) {
@@ -78,6 +83,7 @@ export default function transformProps(chartProps: ChartProps<QueryFormData>) {
     showBgColor,
   } = formData;
 
+
   function customRoundMath(number: number): number {
     if (number === 0) return 0;
 
@@ -102,10 +108,12 @@ export default function transformProps(chartProps: ChartProps<QueryFormData>) {
   }
 
   const { selectedFilters } = filterState;
-  const max = _.max(data.map((row: any) => (row[getMetricLabel(range)])));
+  const max = _.max(_.concat(data.map((row: any) => (row[getMetricLabel(range)])),
+    data.map((row: any) => (row[getMetricLabel(metric)]))));
+
   const max_range = customRoundMath(max as number)
   // eslint-disable-next-line no-underscore-dangle
-  const _data = data.map((row: any) => ({
+  const _data = sortBy(data.map((row: any) => ({
     ranges: [row[getMetricLabel(range)], max_range],
     title: row[getColumnLabel(group)],
     measures: [row[getMetricLabel(metric)]],
@@ -115,7 +123,9 @@ export default function transformProps(chartProps: ChartProps<QueryFormData>) {
     rangeLabels: [_.isEmpty(rangeLabels) ?  getMetricLabel(range) : rangeLabels],
     markerLabels: [_.isEmpty(markerLabels) ?  getMetricLabel(marker) : markerLabels],
     markerLineLabels: [_.isEmpty(markerLineLabels) ? getMetricLabel(markerLine) : markerLineLabels]
-  }));
+  })), function(o) {
+    return Math.floor(o.ranges[0] / 10) * -1;
+  });
 
   return {
     width,
