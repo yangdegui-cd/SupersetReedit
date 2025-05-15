@@ -1,0 +1,26 @@
+{
+  "name": "@superset-ui/plugin-chart-aotu",
+  "version": "1.0.0",
+  "description": "Superset Chart - auto echarts",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "files": [
+    "src"
+  ],
+  "author": "yang.degui",
+  "license": "ISC",
+  "peerDependencies": {
+    "@superset-ui/chart-controls": "*",
+    "@superset-ui/core": "*",
+    "@types/classnames": "*",
+    "@types/react": "*",
+    "antd": "^4.10.3",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  },
+  "dependencies": {
+    "echarts": "^5.6.0"
+  }
+}
