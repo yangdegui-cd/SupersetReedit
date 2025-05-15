@@ -52,11 +52,7 @@ import {
   EchartsMixedTimeseriesFormData,
   EchartsMixedTimeseriesProps,
 } from './types';
-import {
-  EchartsTimeseriesSeriesType,
-  ForecastSeriesEnum,
-  Refs,
-} from '../types';
+import { EchartsTimeseriesSeriesType, ForecastSeriesEnum, Refs } from '../types';
 import { parseAxisBound } from '../utils/controls';
 import {
   dedupSeries,
@@ -69,10 +65,7 @@ import {
   getMinAndMaxFromBounds,
   getOverMaxHiddenFormatter,
 } from '../utils/series';
-import {
-  extractAnnotationLabels,
-  getAnnotationData,
-} from '../utils/annotation';
+import { extractAnnotationLabels, getAnnotationData } from '../utils/annotation';
 import {
   extractForecastSeriesContext,
   extractForecastValuesFromTooltipParams,
@@ -207,6 +200,9 @@ export default function transformProps(
     metricsB = [],
   }: EchartsMixedTimeseriesFormData = { ...DEFAULT_FORM_DATA, ...formData };
 
+  const {
+    tipsShowTotal = true,
+  } = formData;
   const refs: Refs = {};
   const colorScale = CategoricalColorNamespace.getScale(colorScheme as string);
 
@@ -240,17 +236,17 @@ export default function transformProps(
     ? getNumberFormatter(',.0%')
     : currencyFormat?.symbol
       ? new CurrencyFormatter({
-          d3Format: yAxisFormat,
-          currency: currencyFormat,
-        })
+        d3Format: yAxisFormat,
+        currency: currencyFormat,
+      })
       : getNumberFormatter(yAxisFormat);
   const formatterSecondary = contributionMode
     ? getNumberFormatter(',.0%')
     : currencyFormatSecondary?.symbol
       ? new CurrencyFormatter({
-          d3Format: yAxisFormatSecondary,
-          currency: currencyFormatSecondary,
-        })
+        d3Format: yAxisFormatSecondary,
+        currency: currencyFormatSecondary,
+      })
       : getNumberFormatter(yAxisFormatSecondary);
   const customFormatters = buildCustomFormatters(
     [...ensureIsArray(metrics), ...ensureIsArray(metricsB)],
@@ -402,9 +398,9 @@ export default function transformProps(
         formatter:
           seriesType === EchartsTimeseriesSeriesType.Bar
             ? getOverMaxHiddenFormatter({
-                max: yAxisMax,
-                formatter: seriesFormatter,
-              })
+              max: yAxisMax,
+              formatter: seriesFormatter,
+            })
             : seriesFormatter,
         showValueIndexes: showValueIndexesA,
         totalStackedValues,
@@ -451,9 +447,9 @@ export default function transformProps(
         formatter:
           seriesTypeB === EchartsTimeseriesSeriesType.Bar
             ? getOverMaxHiddenFormatter({
-                max: maxSecondary,
-                formatter: seriesFormatter,
-              })
+              max: maxSecondary,
+              formatter: seriesFormatter,
+            })
             : seriesFormatter,
         showValueIndexes: showValueIndexesB,
         totalStackedValues: totalStackedValuesB,
@@ -495,7 +491,10 @@ export default function transformProps(
     convertInteger(xAxisTitleMargin),
   );
 
-  const { setDataMask = () => {}, onContextMenu } = hooks;
+  const {
+    setDataMask = () => {
+    }, onContextMenu,
+  } = hooks;
   const alignTicks = yAxisIndex !== yAxisIndexB;
 
   const echartOptions: EChartsCoreOption = {
@@ -524,7 +523,7 @@ export default function transformProps(
         xAxisMin,
         xAxisMax,
         seriesType === EchartsTimeseriesSeriesType.Bar ||
-          seriesTypeB === EchartsTimeseriesSeriesType.Bar
+        seriesTypeB === EchartsTimeseriesSeriesType.Bar
           ? EchartsTimeseriesSeriesType.Bar
           : undefined,
       ),
@@ -602,7 +601,7 @@ export default function transformProps(
             value.observation !== undefined ? acc + value.observation : acc,
           0,
         );
-        const showTotal = richTooltip && !isForecast;
+        const showTotal = richTooltip && !isForecast && tipsShowTotal;
         const keys = Object.keys(forecastValues);
         keys.forEach(key => {
           const value = forecastValues[key];
@@ -692,13 +691,13 @@ export default function transformProps(
     },
     dataZoom: zoomable
       ? [
-          {
-            type: 'slider',
-            start: TIMESERIES_CONSTANTS.dataZoomStart,
-            end: TIMESERIES_CONSTANTS.dataZoomEnd,
-            bottom: TIMESERIES_CONSTANTS.zoomBottom,
-          },
-        ]
+        {
+          type: 'slider',
+          start: TIMESERIES_CONSTANTS.dataZoomStart,
+          end: TIMESERIES_CONSTANTS.dataZoomEnd,
+          bottom: TIMESERIES_CONSTANTS.zoomBottom,
+        },
+      ]
       : [],
   };
 

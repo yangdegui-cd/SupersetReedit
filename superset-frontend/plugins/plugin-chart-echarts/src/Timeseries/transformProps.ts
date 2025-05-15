@@ -190,6 +190,8 @@ export default function transformProps(
     zoomable,
     auxiliaries,
   }: EchartsTimeseriesFormData = { ...DEFAULT_FORM_DATA, ...formData };
+
+  const { tipsShowTotal = true} = formData;
   const refs: Refs = {};
   const groupBy = ensureIsArray(groupby);
   const labelMap = Object.entries(label_map).reduce((acc, entry) => {
@@ -601,7 +603,7 @@ export default function transformProps(
             value.observation !== undefined ? acc + value.observation : acc,
           0,
         );
-        const showTotal = Boolean(isMultiSeries) && richTooltip && !isForecast;
+        const showTotal = Boolean(isMultiSeries) && richTooltip && !isForecast && tipsShowTotal;
         const showPercentage = showTotal && !forcePercentFormatter;
         const keys = Object.keys(forecastValues);
         keys.forEach(key => {

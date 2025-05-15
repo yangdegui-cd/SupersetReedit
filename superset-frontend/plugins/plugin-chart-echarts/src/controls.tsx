@@ -178,12 +178,25 @@ const richTooltipControl: ControlSetItem = {
     type: 'CheckboxControl',
     label: t('Rich tooltip'),
     renderTrigger: true,
-    default: true,
+    default: false,
     description: t(
       'Shows a list of all series available at that point in time',
     ),
   },
 };
+
+const tooltipShowTotal: ControlSetItem = {
+  name: 'tips_show_total',
+  config: {
+    type: 'CheckboxControl',
+    label: t('显示Tips总计'),
+    renderTrigger: true,
+    default: false,
+    description: t('tips显示各系列的总计与占比'),
+    visibility: ({ controls }: ControlPanelsContainerProps) =>
+      Boolean(controls?.rich_tooltip?.value),
+  }
+}
 
 const tooltipTimeFormatControl: ControlSetItem = {
   name: 'tooltipTimeFormat',
@@ -213,6 +226,7 @@ const tooltipSortByMetricControl: ControlSetItem = {
 export const richTooltipSection: ControlSetRow[] = [
   [<ControlSubSectionHeader>{t('Tooltip')}</ControlSubSectionHeader>],
   [richTooltipControl],
+  [tooltipShowTotal],
   [tooltipSortByMetricControl],
   [tooltipTimeFormatControl],
 ];
