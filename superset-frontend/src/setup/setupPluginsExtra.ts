@@ -20,8 +20,10 @@
 // For individual deployments to add custom overrides
 import RetentionTableChartPlugin from "@superset-ui/plugin-chart-retention-table";
 import Bullet2ChartPlugin from "@superset-ui/plugin-chart-bullet-chart"
+import AotuChartPlugin from "@superset-ui/plugin-chart-aotu"
 
 export default function setupPluginsExtra() {
   new RetentionTableChartPlugin().configure({ key: 'retention-table' }).register();
   new Bullet2ChartPlugin().configure({ key: 'bullet2' }).register();
+  new AotuChartPlugin().configure({ key: 'aotu' }).register();
 }
